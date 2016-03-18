@@ -1,0 +1,105 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+
+
+table {
+	
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	
+	}
+
+th, td {
+    
+    padding: 5px;
+    text-align: center;
+	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+    
+
+#a {
+	text-align: center;
+}
+
+
+#local_form_canstyle {
+	padding: 0% 37%;
+}
+
+#submitButton {
+
+	background-color: #F0F0F0;
+	color: black;
+	width: 260px;
+
+}
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    <div class="card"  style="height: 66px; text-align:center">
+	    	<a href="{% url 'twister:user_start' %}"><h1 title="Back to user start screen">Twister</h1></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 160px; text-align:center">
+	    <p align="center">Low rater confidence can indicate poor quality performance data.<br>
+		Twister recommends accepting 'A' as the lowest acceptable rater confidence level,<br>
+	    but small sample sizes may be prohibitive.<br>
+	    <br>The table below displays number of cases removed at each confidence level.<br>
+	    </div>
+	    
+	    
+	    
+	    {{ rata | safe }}
+	    
+	    
+	    <br><br>
+	    <div class="card"  style="height: 66px; text-align:center">
+	    	<p align="center">Select minimum acceptable confidence level,<br>
+	    	then Click the Button.</p>
+	    </div>
+	    
+	    <br>
+	    <div style="align:center" style="height: 100px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:rater_conf' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    	    
+                <a style="align:center">  {{ rater_conf_form.confidence_name }} </a>
+			    <br><br>
+			    <p><input type="submit" id="submitButton" name="submitButton" value="Click to set Minimum Confidence Level" onclick="checkParameters();return false;"/></p>
+			    
+			</form>
+		</div>
+	    
+		
+		<div class="card"  style="height: 66px; text-align:center">
+	    	<a href="{% url 'twister:user_start2' %}"><h3 title="If you like job titles, click to advance.
+Or go back, fix data file and try again.">don't click here yet to advance</p></a>
+	    </div>
+	    
+				
+		<div class="card"  style="height: 100%; width:96%; text-align:center;padding: 2% 2%;">
+			{{ data_show | safe }} <!--//holy shit, thanks to stackoverflow for this answer http://stackoverflow.com/questions/22180993/pandas-dataframe-display-on-a-webpage-->
+		
+		</div>
+
+	</div>
+</div>
+</html>
+
+{% endblock %}

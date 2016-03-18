@@ -1,0 +1,132 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+<title>Twister</title>
+
+<style>
+canvas {
+  position: absolute;
+  top: 0;
+  //background: radial-gradient(silver, white, black);
+}
+
+fps {
+    color: black;
+}
+
+</style>
+<div id="fps">Body count: <span>?</span></div>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+    
+
+var data = d3.range(696).map(function() {
+  return {xloc: 0, yloc: 0, xvel: 0, yvel: 0};
+});
+
+var width = window.innerWidth,
+    height = window.innerHeight,
+    angle = 2 * Math.PI;
+
+var body_count = 0;
+    
+var x = d3.scale.linear()
+    .domain([-5, 5])
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .domain([-5, 5])
+    .range([0, height]);
+
+var time0 = Date.now(),
+    time1;
+
+var fps = d3.select("#fps span");
+
+var canvas = d3.select("body").append("canvas")
+    .attr("width", width)
+    .attr("height", height)
+    .on("click",click);
+
+var context = canvas.node().getContext("2d");
+context.fillStyle = "white";
+context.strokeStyle = "white";
+context.strokeWidth = .001;
+
+
+d3.timer(function() {
+  context.clearRect(0, 0, width, height);
+
+  data.forEach(function(d) {
+    d3.select("canvas").style("background", "radial-gradient(silver, white, black)");
+    digit = body_count % 2;
+    
+    d.xloc += d.xvel;
+    d.yloc += d.yvel;
+    //d.xvel += 0.04 * (Math.random() - .5) - 0.05 * d.xvel - 0.0005 * d.xloc;
+    //d.yvel += 0.01 * (Math.random() - .5) - 0.05 * d.yvel - 0.0005 * d.yloc;
+    //experimenting with the swarming math, original above two lines
+    
+    d.xvel += 0.025 * (Math.random() - .5) - 0.0025 * d.xloc;
+    d.yvel += 0.01 * (Math.random() - .5) - 0.05 * d.yvel - 0.0005 * d.yloc;
+    
+    
+    context.beginPath();
+    context.arc(x(d.xloc), y(d.yloc), Math.min(1 + 1000 * Math.abs(d.xvel * d.yvel), 10), 0, angle);
+    context.fill();
+    context.stroke();
+    context.font = "100% sans-serif";
+    context.fillText(digit,x(d.xloc),y(d.yloc));
+    context.fillStyle = "#00191a";   
+    //context.filltext("A");
+    
+    if (body_count % 2600 == 0)
+            {
+                d.xvel = 0;
+                d.yvel = 0;                               
+            }
+            
+     if (body_count % 5200 == 0)
+            {
+                d3.select("canvas").style("background", "none");
+                setTimeout(100000);
+                d3.select("canvas").style("background-color", "black");
+                setTimeout(100000);
+                d3.select("canvas").style("background-color", "white");
+                setTimeout(100000);
+                d3.select("canvas").style("background-color", "black");
+                setTimeout(100000);
+                d3.select("canvas").style("background-color", "white");
+                d.xvel = 0;
+                d.yvel = 0;
+                d.xloc = 0;
+                d.yloc = 0;                                         
+            }
+              
+    
+  });
+
+  body_count += 1;
+  time1 = Date.now();
+  fps.text(body_count);
+  time0 = time1;
+});
+
+
+//on click, takes user to the Twister start of user instruction
+function click(d) {
+	window.location = "/twister/user_start";
+}
+
+</script>
+
+<a href=user_start>Make a Sacrifice</a>
+</html>
+
+{% endblock %}

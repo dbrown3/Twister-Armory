@@ -1,0 +1,201 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+
+h1 {
+    text-align: center;
+    color: #1A1A1A;
+   }
+   
+#authors {
+	text-align: center;
+	color: #737373;
+	font-size: 100%;
+   }
+
+p {
+    font-size: 100%;
+    text-align: center;
+   }
+ 
+#a {
+	text-align: center;
+}
+
+div{
+
+	text-align: center;
+}
+
+#version {
+	color: #1A1A1A;
+}
+
+
+#file_upload {
+	text-align: center;
+} 
+
+#local_form_canstyle {
+	padding: 0% 43%;
+}
+
+.button {
+	background-color:blue;
+	border:none;
+	color:white;
+	padding: 15px 32px;
+	text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+</style>
+
+
+<!--<h4>{{ print_x }}</h4>-->
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+    <div class="card"  style="height: 66px">
+    	<h1>Twister</h1>
+    </div>
+    
+    <div class="card" id="authors"  style="height: 99px">
+    	<h7>By<br> 
+    	<a href="https://scholar.google.com/citations?user=c0lTOcgAAAAJ&hl=en"><i>Phillip L. Gilmore, PhD</i></a><br>
+    	&<br>
+    	<a href="mailto:Derek.Brown@infor.com"><i>Derek Brown, MS</i></a></h7>
+    </div>
+    
+    <div class="card"  style="height:555px">
+	    <p>
+	    Twister cleans and merges performance data and predictor data.<br>
+	    To get started, let's read in the performance evaluation data file (*.csv).<br>
+	    <br>This version of Twister <div id="version" class="card" style="height: 13px"><i>{{version_now}}</i></div><br> 
+	    supports supervisor eval data files<br>
+	    exported from survey management system<br>
+	    <br>
+	    
+	    
+	    <button class="btn" id="export_button" onclick="click_export()" type="button" style="color:white;background-color:#69B5DD"
+	    title=
+	    "A *.csv file with
+Performance data as numerical values
+beginning on column S which is the 19th column.
+Zeroes are treated as missing data.
+The final 'confidence' item beginning with 'Based on how often...'
+contains letter-based values (e.g., 'CA').
+The following column headers must be in the data file:
+'Geo Level 1', 'Geo Level 2', 'Geo Level 3', 'Geo Level 4',
+'Ratee Unique ID', 'Rater Unique ID', 'Job Title','Hire Date'">
+  		in 'Answers' format.
+  		</button>
+  		
+  	   
+		<br><br>In a few moments, after you select your data file<br>
+		and check job titles, the program will ask you for the number of items.<br>
+		Do not count the confidence item nor<br>
+		subsequent items at this stage.<br>
+		Twister uses that number to diagnose missing data<br>
+		and to compute statistics on those performance data columns.<br>
+		<br>Pro tip: Open your Profile Checklist and keep it nearby.<br>
+		<br>You are ready to start!<br>
+		Click the "Choose File" button below,<br>
+		then use the file explorer to access your<br>
+		*.csv performance data file.<br>
+		<br>
+		Once you have chosen, click "Upload Data".<br>
+	    </p>
+    </div>
+        
+   
+    	<div style="align:center" style="height: 100px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:create_new_study' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}
+			    
+			    <p align="center"> Choose CSV File: </p>
+                <a>  {{ data_entry_form.csv_file }} </a>
+			    <br>
+			    <p><input type="submit" id="submitButton" name="submitButton" value="Upload Data" onclick="checkParameters();return false;"/></p>
+			    
+			</form>
+		</div>
+    <br><br>
+    <div class="card"  style="height: 100px">
+    	<a href="{% url 'twister:full_docs' %}">Click here for more info on Twister...</a>
+    </div>
+  
+  </div>  
+</div>
+
+</html>
+
+
+<script language="Javascript">
+    
+        var submitButton = document.getElementById("submitButton")
+        var exportButton = document.getElementById("export_button")
+        
+        //on clicking the answers format button, an empty eval is exported with correct header labels       
+        function click_export() {
+        	window.location = "/twister/export_empty_eval";        
+        }
+        
+        
+        function checkParameters() {        
+            submitButton.style.visibility = 'visible'
+
+            var csvFileUpload = document.getElementById("id_csv_file")
+            var fileUpload = csvFileUpload.value
+            
+            //none check
+            if (fileUpload.length < 1) {
+
+                alert("Please upload a CSV file")
+                submitButton.style.visibility = 'visible'
+                return false
+            }
+
+            //if we have a csv file upload, make sure that it has a csv file extension
+            if (fileUpload.length > 0 && fileUpload.indexOf(".csv") == -1) {
+
+                alert("File being uploaded must be in CSV format")
+                submitButton.style.visibility = 'visible'
+                return false
+            }
+            
+            //if we get here, submit the form
+            var theForm = document.forms[0];
+            theForm.submit()
+            return true;
+        }
+
+
+        //detect if browser is IE or not
+        var ms_ie = false;
+        var ua = window.navigator.userAgent;
+        var old_ie = ua.indexOf('MSIE ');
+        var new_ie = ua.indexOf('Trident/');
+
+
+        if ((old_ie > -1) || (new_ie > -1)) {
+            ms_ie = true;
+        }
+
+
+        if ( ms_ie ) {
+            IEspan = document.getElementById("IEWarningSpan")
+            IEspan.innerHTML = "You are currently using Internet Explorer. Please use Chrome or Firefox to utilize the full feature set of Twister."
+       };   
+    </script>
+
+
+{% endblock %}

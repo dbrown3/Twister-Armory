@@ -1,0 +1,77 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+
+
+table {
+	
+	
+	width:90%;
+	border: 0;
+	align: center;
+	text-align: center;
+	
+	}
+
+thead tr th {
+    
+    padding: 5px;
+    text-align: center;
+    background-color: #CBEBF4;
+    color: black;
+	
+	}
+
+tbody tr th {
+
+	padding: 5px;
+
+}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+	
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    <div class="card"  style="height: 66px; text-align:center">
+	    	<a href="{% url 'twister:user_start' %}"><h1 title="Back to user start screen">Twister</h1></a>
+	    </div>
+	     
+	     
+	     
+	
+		<div class="card"  style="height: 100%; width:96%; text-align:center;padding: 2% 2%;">
+		
+		If any job titles are incorrect, you can remove those cases<br>
+in the original data file and re-upload on the previous page.<br>
+<br>Any job titles remaining in the data file will be kept for later analyses.<br><br><br>
+		
+			{{ jobs_pivot | safe }}
+			
+		</div>
+		 
+		 
+		<br><br>
+	    
+		
+		<div class="card"  style="height: 66px; text-align:center">
+	    	<a href="{% url 'twister:user_start2' %}"><h3 title="If you like job titles, click to advance.
+Or go back, fix data file and try again.">Click here to advance</p></a>
+	    </div>
+	    
+
+	</div>
+</div>
+</html>
+
+{% endblock %}

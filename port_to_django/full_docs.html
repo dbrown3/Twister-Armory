@@ -1,0 +1,139 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+h1,h2,h3 {
+    text-align: center;
+    color: #69B5DD;
+   }
+   
+p {
+    font-size: 100%;
+    text-align: center;
+    padding: 2%;
+   }
+   
+ul {
+    font-size: 100%;
+    text-align: center;
+   }
+   
+#authors {
+	text-align: center;
+	color: #737373;
+	font-size: 100%;
+   }
+ 
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+
+    <div class="card"  style="height: 66px">
+    	<h1>Twister</h1>
+    </div>
+    
+    <div class="card" id="authors"  style="height: 99px">
+    	<h7>By<br> 
+    	<a href="https://scholar.google.com/citations?user=c0lTOcgAAAAJ&hl=en"><i>Phillip L. Gilmore, PhD</i></a><br>
+    	&<br>
+    	<a href=""mailto:Derek.Brown@infor.com"><i>Derek Brown, MS</i></a></h7>
+    </div>
+    
+    <div class="card"  align="center" style="height: 420px">
+    <br>
+    <h2>Background</h2>
+    
+    <p>
+   <br>Twister is designed to merge, clean and transform datasets to prepare them for predictive modeling.<br> 
+<br>In stage 1, the user selects a standard form containing performance data. The form is typically exported from the survey management system. Twister is currently optimized for performance appraisal exports from survey management tool, but can generalize to other performance metrics if they are fit into the standard form and do not trigger missing data codes.<br> 
+<br>In stage 2, the user associates the performance data with predictor data via the Matching Tool 2.5. Twister is designed specifically for the 39 predictors measured by the PPI2+PMA assessment.<br>
+<br>The ultimate goal of Twister is to help the analyst get to their analyses as quickly as possible without being burdened by excessive dataset cleaning and merging time.<br>
+   </p>
+    </div>
+
+    <div class="card"  style="height: 170px">
+    <h2>Dependencies</h2>
+    <br> 
+    <ul>
+   		<li>Standard form of performance data (outcome data) (.csv format)</li>
+   		<li>Standard form of predictor data (only supports PPI2+PMA) (.csv format)</li>
+    </ul>
+    </div>
+
+	<div class="card"  align="center" style="height: 1500px">
+    <br>
+    <h2>Preparing Your Performance Data File</h2>
+    
+    <p>
+   <br>Start with your .csv data file exported from survey management. Twister is optimized for the export in 
+<br>"Answers" mode, where ratings are provided on a 1 - 7 response scale. The confidence item is also 
+<br>included "BASED ON HOW OFTEN..." with letter-based values (e.g., "CA", "N", "D", etc.).<br>
+<br>Twister also can be used for other performance metrics with a little preparation, but there are two caveats.
+<br>First, zeroes and -99 are interpreted as missing data. If the performance metric contains valid zeroes, 
+<br>then the metric should first be transformed to exclude zeroes (e.g., add 100). The metric can be 
+<br>transformed back to its original form after Twister is finished (e.g., subtract 100).<br> 
+<br>Second, the data file must have standard headers as found in the <a href="{% url 'twister:export_empty_eval' %}">empty template.</a>
+<br>Essential column headers and their importance are detailed below.<br>
+<br><b>Geo Level 1 - Geo Level 4</b> - Values are used to compute ANOVA tests. Blank values acceptable.
+<br><br><b>Ratee First Name</b> - Values used for matching tool. Blank values are acceptable.
+<br><br><b>Ratee Last Name</b> - Values used for matching tool. Blank values are acceptable.
+<br><br><b>Ratee Unique ID</b> - **IMPORTANT** Used as the initial unique id when reading the data file. Remove duplicate values.
+<br><br><b>Last 4 SSN</b> - Values used for matching tool. Blank values are acceptable.
+<br><br><b>Job Title</b> - Values are used to compute ANOVA tests. Blank values acceptable.
+<br><br><b>Email</b> - Values used for matching tool. Blank values are acceptable.
+<br><br><b>Hire Date</b> - "mm/dd/YYYY" Values used for tenure calculation. Blank values are acceptable but count as a removal for Missing Tenure data. Excessive missing data may trigger an alternative behavior by Twister that ignores tenure calculation.
+<br><br><b>Survey Group</b> - Values not used. Blank values are acceptable.
+<br><br><b>Rater First Name</b> - Values not used. Blank values are acceptable.
+<br><br><b>Rater Last Name</b> - Values not used. Blank values are acceptable.
+<br><br><b>Rater Unique ID</b> - **IMPORTANT** Used as a secondary unique id when reading the data file. Blank values are acceptable.
+<br><br><b>Email</b> - Values not used. Blank values are acceptable.
+<br><br><b>Duration</b> - Values not used. Blank values are acceptable.
+<br><br><b>Ratee Status</b> - Values not used. Blank values are acceptable.
+<br><br><b>metric1</b> - Typically item #1 values. The header can be mostly anything, but replace special characters
+<br>like commas, slashes and dashes with underscores or spaces. Usually the item text is produced by survey management export and serves as the header. If the analysis is for a non-eval data file, other metrics can be inserted here with their names. Empty cells, zeroes, "blank", and -99 values are counted as missing data and can trigger missing performance data removal codes.
+<br><br><b>metric2</b> - Similar to metric1. These metric headers tend to contain the evaluation items. There can be any number of metric items or components inserted here. When running the app, Twister will ask how many items are included, and will use the item number you provide to compute the scale statistics and to interpret partially missing performance data.
+<br><br><b>metric3</b> - Similar to metric1 and metric2. The user can insert any number of items or metric components. Be sure to insert additional metrics before the last header beginning with "BASED ON HOW OFTEN...". 
+<br><br><b>Based on how often I observe this employee's behavior, I am confident in all of the ratings I just provided.</b> - **IMPORTANT** Header must begin with the text "Based on". Known as the confidence item and not counted toward the number of metric items. This column requires values and operates on letter-based values produced by the survey management export in "Answers" format (e.g., "CA", "N", "D", etc.). Even if the metric does not require a confidence item, this column should be populated with values---user can manually input "CA" before running the app if no confidence analyses are desired.
+</p>
+    </div>
+
+ 	<div class="card"  style="height: 220px">
+	    <h3>PREPARATION NOTE</h3>
+	    <br> 
+	    <p>Twister typically can be used directly on a survey management export file in .csv format<br>
+	    so long as the data file was exported in "Answers" format which has any number of Infor evaluation items<br>
+	    possessing 1 - 7 response values and the confidence item at the end.<br>
+		<br>The extensive notes above are for troubleshooting and manually fixing data files<br>
+		that came from some other system, were exported in some atypical format, or utilize objective metrics.	    
+	    </p>
+    </div>
+    
+    <div class="card"  style="height: 350px">
+	    <h3>FAQ</h3>
+	    <br> 
+	    <p><b><i>Where does the name Twister come from?</i></b><br>
+		<br>First, an app named Spin was built based on the idea of spinning-down DNA samples<br>
+		in a centrifuge during genetics experiments. The user could load samples of messy stuff, and<br>
+		the tool would purify the samples in preparation for analysis.<br>
+		<br>Spin was originally designed for purification of performance data samples.<br>
+		<br>Wind, which was similarly designed for predictor data, was joined with Spin.<br>
+		Their evolution is known as Twister.<br>
+		Twister can support the analyst through the entire<br>
+		process of data preparation by combining criterion and predictor side data cleaning, merging and analysis.  	    
+	    </p>
+    </div>
+
+  </div>
+
+</div>
+
+</html>
+
+
+{% endblock %}
