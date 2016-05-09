@@ -1,0 +1,175 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+</head>
+
+
+<style>
+
+h4 {
+	color: black;
+}
+
+#time {
+	color:#B59ECA;
+}
+
+#local_form_canstyle {
+	padding: 0% 43%;
+}
+
+input#twisterButton {
+	width: 220px;
+	background-color:#76B051;
+	color:white;
+	border-color:white;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+input#twisterButton:hover {
+	width: 220px;
+	background-color: #397514;
+	color:white;
+	border-color:white;
+	height: 24px;
+	-webkit-border-radius: 28;		
+}
+
+button#cso_button {
+	background-color: #69B5DD;
+	color: white;
+	width: 220px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+button#cso_button:hover {
+	background-color: #368AC0;
+	color: white;
+	width: 220px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+button#final_data {
+	background-color: white;
+	color: black;
+	width: 220px;
+	height: 24px;
+	border-color:black;
+	-webkit-border-radius: 28;
+}
+
+button#final_data:hover {
+	background-color: black;
+	color: white;
+	width: 220px;
+	height: 24px;
+	border-color:black;
+	-webkit-border-radius: 28;
+}
+
+input#bs_name_text {
+	background-color:white;
+	width:75px;
+	color:black;
+	text-align:center;
+}
+
+input#profile_name_text {
+	background-color:white;
+	color:black;
+	text-align:center;
+	width:300px;
+}
+
+div#bs_name {
+	width:460px;
+}
+
+#star {
+	color:#F2BC41;
+	fill:#F2BC41;
+}
+
+table {
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	font-size:20px;
+	}
+
+th, td {   
+    padding: 5px;
+    text-align: center;
+    height: 24px;	
+	}
+
+
+
+table tr:nth-child(1) {
+    background-color: #F4C951;
+    color: white;
+    }
+
+table tr:nth-child(2) {
+    background-color: #D8D8D8;
+    }
+
+</style>
+
+
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+		
+	<div class="card" style="font-family:Lucida Console;text-align:center; padding: 2% 0%;">
+	    	
+	    	<br><h4>Your time on: <b><i>{{in_name}}</i></b></h4><br><br> 
+	    	<h3 id="time">{{beat_days}} days, {{beat_minutes}} minutes, {{beat_seconds}} seconds</h3>	    		    	
+	</div>
+	
+	<div class="card" style="font-family:Lucida Console;text-align:center; padding: 2% 0%;">
+	    	<h4 id="beat_comment">{{beat_comment}}</h3>	    		    	
+	</div>
+		
+	<div class="card" style="font-family:Lucida Console;text-align:center; padding: 5% 20%;">
+	<h2>The Best</h2>
+	<br>
+	    	{{ top_scores | safe}}
+	    	
+	<p style="font-size:11px;text-align:left;">Posted records for Twister version: {{version_now}}</p>    		    	
+	</div>
+	
+	<div class="card" id="challenge" style="font-size:16px;text-align:center; padding: 2% 0%;">
+	    	<p>There's only one way to be the best.<br>
+	    	You gotta beat the best.<br>
+	    	Click the timer if you dare.
+	    	</p>	    		    	
+	</div>
+	
+	<div class="card"  style="text-align:center; padding: 5% 0%;">
+		<a href="{% url 'twister:index' %}"><img id="timer" title="Beat the best" style="border-radius:1px;height:90x; width:90px;" src="{% static 'twister/images/timer.svg' %}"/></a>
+	</div>
+</div>
+
+<br><br>
+
+</html>
+
+{% endblock %}

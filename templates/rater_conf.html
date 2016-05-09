@@ -1,0 +1,115 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+img {
+	width: 100%;
+	height: 100%;	
+}
+
+h2 {
+	color:#54A1D3;
+}
+
+table {
+	
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	
+	}
+
+th, td {
+    
+    padding: 5px;
+    text-align: center;
+    height: 200%;
+	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+    
+
+
+#local_form_canstyle {
+	padding: 0% 39%;
+}
+
+#submitButton {
+
+	background-color: #F0F0F0;
+	color: black;
+	width: 260px;
+
+}
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Input Date of Data Collection</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    <p align="center">Referencing the Profile Checklist now --<br>
+		Enter the date of data collection.<br>
+		<br>
+		The differences between each incumbent's "Hire Date" value<br>
+		and the Date of Data Collection inputted below<br>
+		is used to compute each incumbent's Tenure in days.
+	    
+	    </div>
+	    <br>
+	    <div class="card"  style="height: 66px; text-align:center">
+	    	<p align="center">Type in the data collection date,<br>
+	    	then Click the Button below.</p>
+	    </div>
+	    <br>
+	    <div style="align:center" style="height: 100px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:tenure_ask' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    
+			    <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ k }}" name="k"/>
+			    <input type="hidden" value="{{ start_time }}" name="start_time"/>	    
+                
+                <div class="field">
+			      <label for="date_field" class="label">Date Field</label>
+			      <input id="date_field" class="datepicker" placeholder="MM/DD/YYYY" name="date_field" type="text">
+			    </div>		                
+                
+			    <br><br>
+			    <p><input type="submit" id="submitButton" name="submitButton" value="Click to set Data Collection Date" onclick="checkParameters();return false;"/></p>
+			    
+			</form>
+		</div>
+	    
+
+	</div>
+</div>
+</html>
+
+{% endblock %}

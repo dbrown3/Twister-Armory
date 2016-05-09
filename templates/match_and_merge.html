@@ -1,0 +1,144 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+</head>
+
+
+<style>
+
+#file_upload {
+	text-align: center;
+} 
+
+#local_form_canstyle {
+	padding: 0% 42%;
+}
+
+#export_button {
+	background-color:#368AC0;
+	vertical-align:center;
+	color: white;
+	width: 220px;
+	height: 32px;
+	-webkit-border-radius: 28;
+}
+
+#export_button:hover {
+	background-color: #69B5DD;
+	color: white;
+	width: 220px;
+	height: 32px;
+	-webkit-border-radius: 28;
+}
+
+input#submitButton:hover {
+	background-color: black;
+	color: white;
+}
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Match and Merge</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <p>On this screen, you need to select your Matched data file<br>
+	    and then click the button at the bottom.<br>
+	    <br>
+	    Formatting of this file is important.<br>
+	    From the previous screen, you were provided the values to input into Matching 2.5.<br>
+	    After matching, you need to export the file using the "Profile Creation Match".<br>
+	    In case you need to combine multiple matches or check file format,<br>
+	    the button just below can export an empty file with correct format.</p>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    <button class="btn" id="export_button" onclick="click_match_export()" type="button"
+	    title=
+	    "A (*.csv) file with the format of the 'Profile Creation Match' export.
+Critical columns include the 
+'PA ID', the 39 dimensions of PPI2+PMA,
+QC metrics and other bio data such as first and last name.
+Additionally, after the final dimension and QC
+columns, you will find the 'Random ID'. This column is very
+important for Twister to merge the performance data
+and predictor data.">
+  		'Profile Creation Match' format.
+  		</button>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+		    <p><b><i>This part is tricky.</i></b><br>
+		    <br>
+		    Your matching file needs to be in (*.csv) format.<br>
+		    Even though you thought you exported your matching file as (*.csv),<br>
+		    this is not totally true.<br>
+		    <br>
+		    You need to open up that matching export file,<br>
+		    and then 'Save as' in (*.csv) format, and then close the file.<br>
+		    You may notice that the original file was originally output as Unicode (*.txt)<br>
+		    posing as a (*.csv). This is why you must do the re-'Save as' procedure.<br>
+		    If the next page creates an error, this is probably the issue.<br>
+		    <br>
+		    Once you have your correctly formatted (*.csv) match file saved somewhere,<br>
+		    use the 'Choose File' button below to select that file.<br>
+		    After selecting your file, click the button at the bottom to advance.		    
+		    </p>
+	    </div>
+	    
+	    <div style="align:center" style="height: 60px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:merge_and_master' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <p align="center" style="width: 220px;"><b> Choose re-saved CSV Match File: </b></p>
+                <a>  {{ data_entry_form.csv_file }} </a>
+                <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>			    
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ tenure_label }}" name="tenure_label"/>
+			    <input type="hidden" value="{{ tenure_rem_label }}" name="tenure_rem_label"/>
+			    <input type="hidden" value="{{ start_time }}" name="start_time"/>	
+			    <br>
+			    <br>
+			    <p><input type="submit" id="submitButton" style="width: 220px;" name="submitButton" value="Click After Selecting Match File" onclick="checkParameters();return false;"/></p>
+			    <br>
+			    <br>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script language="Javascript">
+  
+        var exportButton = document.getElementById("export_button")
+        
+        //on clicking the answers format button, an empty eval is exported with correct header labels       
+        function click_match_export() {
+        	window.location = "/twister/export_empty_match";        
+        }
+</script>
+
+
+</html>
+
+{% endblock %}

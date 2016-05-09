@@ -1,0 +1,101 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+img {
+	width: 100%;
+	height: 100%;		
+}
+
+h2 {
+	color:#54A1D3;
+}
+
+table {
+	width:90%;
+	border: 0;
+	align: center;
+	text-align: center;	
+	}
+
+thead tr th {
+    padding: 5px;
+    text-align: center;
+    background-color: #CBEBF4;
+    color: black;
+	}
+
+tbody tr th {
+	padding: 5px;
+}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+
+#local_form_canstyle {
+	padding: 0% 36%;
+
+}
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    	{% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Job Title Double-Check</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>    
+	
+		<div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">		
+		If any job titles are incorrect, you can remove those cases<br>
+in the original data file and re-upload on the previous page.<br>
+<br>Any job titles remaining in the data file will be kept for later analyses.<br><br><br>
+		
+			{{ jobs_pivot | safe }}
+			
+		</div>
+		 
+		 
+		<br><br>
+	    
+		
+		<div id="local_form_canstyle" style="align:center" style="height: 100px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:user_start2' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    	    
+                <input type="hidden" value="{{ master_data }}" name="master_data"/>
+                <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+                <input type="hidden" value="{{ in_name }}" name="in_name"/>               
+                <input type="hidden" value="{{ k }}" name="k"/>
+                <input type="hidden" value="{{ start_time }}" name="start_time"/>
+                
+			    <br><br>
+			    <p><input type="submit" id="submitButton" name="submitButton" value="Click here to advance" title="If you like job titles, click to advance.
+Or go back, fix data file and try again." onclick="checkParameters();return false;"/></p>
+			    
+			</form>
+		</div>
+		
+		
+	</div>
+</div>
+
+
+</html>
+
+{% endblock %}

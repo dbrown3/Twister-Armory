@@ -1,0 +1,374 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+</head>
+
+<style>
+
+img {
+	width: 100%;
+	height: 100%;		
+}
+
+h2,h3,h4 {
+	color:#54A1D3;
+}
+
+h3#spinsight {
+	color:black;
+}
+table {
+	align: center;
+	width: 90%;
+	border: 0;
+	text-align: center;
+	}
+
+th, td {   
+    padding: 0px;
+    text-align: center;
+    height: 200%;	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+    
+
+#continue_on {
+	background-color: white;
+	color: black;
+	width: 260px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+#continue_on:hover {
+	background-color: black;
+	color: white;
+	width: 260px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+#spinButton {
+	background-color: #B94E4E;
+	color: white;
+	width: 260px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+#spinButton:hover {
+	background-color: #941E1E;
+	color: white;
+	width: 260px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+
+#match_frame_button {
+	background-color: #368AC0;
+	color: white;
+	width: 260px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+#match_frame_button:hover {
+	background-color: #69B5DD;
+	color: white;
+	width: 260px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+#submitButton {
+	background-color: #F0F0F0;
+	color: black;
+	width: 260px;
+}
+
+#item_summary,#corrs {
+	align:center;
+}
+
+#scale_summary {
+	align:center;
+	width:35%;
+	font-size:120%;
+}
+
+#covariate_summary {
+	align:center;
+	font-size:120%;
+}
+
+.bar {
+  fill: #CBEBF4;
+  shape-rendering: crispEdges;
+}
+
+.bar:hover {
+  fill: #DE8181;
+}
+
+.bar text {
+  fill: black;
+  font: 14px sans-serif;
+}
+
+.axis path, .axis line {
+  fill: black;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+	display: none;
+}
+
+</style>
+
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Twisted Metric</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <p align="center">Here's what we have so far.<br>
+	    The sample has been cleaned for performance data issues<br>
+	    and it is ready for matching.<br>
+	    <br>
+	    After you match, export the <b>"Profile Creation Match"</b> being sure to include <b>'Random ID'</b>.<br>
+	    <br>
+	    For your interest, Twister provides a variety of smart graphs and reports<br>
+	    in the space below. Feel free to take your time exploring and reflecting<br>
+	    on these advanced analytical insights by scrolling down the page.<br>
+	    <br>
+	    When you are ready to continue on with merging your matched predictor data,<br>
+	    click the "Continue on" button just below.
+	    </p>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+			<form name="local_form_canstyle2" id="local_form_canstyle2" action="{% url 'twister:match_and_merge' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ k }}" name="k"/>
+			    <input type="hidden" value="{{ tenure_label }}" name="tenure_label"/>
+			    <input type="hidden" value="{{ tenure_rem_label }}" name="tenure_rem_label"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ start_time }}" name="start_time"/>				    
+			    <p><input type="submit" id="continue_on" name="submitButton" value="Continue on" onclick="checkParameters();return false;"/></p>
+			</form>
+		</div>	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    
+	    <p align="center">Using the buttons below, you can access the data to be pasted into Matching 2.5.<br>
+	    The Matching Tool is currently hosted at<br> 
+	    PeopleAnswers Admin "Company Match External Data to Candidates".<br>
+	    </p>
+	    
+	    <form name="local_form_canstyle2" id="local_form_canstyle2" action="{% url 'twister:click_spin_export' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ tenure_rem_label }}" name="tenure_rem_label"/>    
+			                                     
+			    <br><br>
+			    <p><input title="SpinMaster is an (*.xls) file
+containing the critical columns for Matching 2.5
+as well as all of the original data columns
+and newly computed columns such as scale scores
+and removal reasons.
+The SpinMaster file provides the analyst with
+flexibility when using Twister in cases where custom
+analyses, removals, or re-runs are desired.
+If using SpinMaster's columns for Matching tool, be sure
+to include the 'Random ID' column in the match and export."
+				type="submit" id="spinButton" name="submitButton" value="Click to Export SpinMaster" onclick="checkParameters();click_spin_export();return false;"/></p>
+			    
+			</form>   		
+	    </div>
+	    
+	    <div class="container" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <button type="button" title="The fastest way to go.
+If you like your results, just click this button
+to expose the critical matching data from your current sample.
+Copy-paste the exposed values directly into the matching tool."
+		id="match_frame_button"style="text-align:center;padding: 0% 4%;" class="btn btn-info" data-toggle="collapse" data-target="#match_frame">Click to Expose Match Data</button>
+	    <div class="collapse" id="match_frame"style="height: 100%; width:100%; text-align:center;padding: 2% 20%;;">
+	    {{ match_frame | safe }}
+	    </div>
+	    </div>
+	    
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h3 id="spinsight">~~~~~~~~~~~~~~~~~<br>
+	    Spinsight(c)<br>
+	    ~~~~~~~~~~~~~~~~~</h3>
+	    </div>
+	    
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h4 title="Data has been cleaned for performance data issues.
+Final samples may differ due to assessment data issues, 
+manual re-classifcations, or other analyst judgments.">Performance Data in Cleaned Dataset</h4>
+	    </div>
+	    
+	    <div class="card" id="this_card" style="height: 100%; width:100%; text-align:center;padding: 0% 0%;">	    
+	    <script>	    
+						
+		var values = {{ twisted_metric}}; // a global
+		
+		var formatCount = d3.format(",.0f");
+		
+		view_width = window.innerWidth * .66;
+		view_height = window.innerHeight * .75;
+			
+		var margin = {top: view_height*.05, right: view_width*.02, bottom: view_height*.04, left: view_width*.02};
+		
+		width = view_width - margin.left - margin.right;
+		height = view_height - margin.top - margin.bottom;
+		    
+		    		
+		var x = d3.scale.linear()
+		    .domain([-4, 4])
+		    .range([0, width]);
+		
+		// Generate a histogram using 10 uniformly-spaced bins.
+		var data = d3.layout.histogram()
+		    .bins(x.ticks(14))
+		    (values);
+		
+		data.sort(function(a,b){
+		  return a - b;
+		});
+				
+		var y = d3.scale.linear()
+		    .domain([0, d3.max(data, function(d) { return d.y; })])
+		    .range([height, 0]);
+		
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+		
+		var svg = d3.select("#this_card").append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
+		var bar = svg.selectAll(".bar")
+		    .data(data)
+		  .enter().append("g")
+		    .attr("class", "bar")
+		    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+		
+		bar.append("rect")
+		    .attr("x", 14)
+		    .attr("width", width / 18)
+		    .attr("height", function(d) { return height - y(d.y); });
+		
+		bar.append("text")
+		    .attr("dy", "1.35em")
+		    .attr("y", -(height*.05))
+		    .attr("x", width / 11 - (width/22) )
+		    .attr("text-anchor", "middle")
+		    .attr("stroke-width", 8)
+		    .text(function(d) { return formatCount(d.y); });
+		
+		svg.append("g")
+		    .attr("class", "x axis")
+		    .attr("transform", "translate(0," + (height)  + ")")
+		    .call(xAxis);		
+
+		</script>
+	    	    
+	    </div>
+	    
+	    <div class="card" style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    <h5 title=""><b>Performance Scores in Z-Units</b></h5>
+	    </div>
+	    
+	    <div class="container" id="scale_summary" style="height: 100%; text-align:center;padding: 2% 2%;">
+	    <h4 title="Data has been cleaned for performance data issues.
+Final samples may differ due to assessment data issues, 
+manual re-classifcations, or other analyst judgments.">Scale Summary</h4>	    
+	    {{ scale_summary | safe }}
+	    </div>	    
+	    
+	    <div class="container" id="item_summary" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <h4 title="Data has been cleaned for performance data issues.
+Final samples may differ due to assessment data issues, 
+manual re-classifcations, or other analyst judgments.">Item Summary</h4>	    
+	    {{ item_summary | safe }}
+	    </div>
+	    
+	    <div class="container" id="corrs" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <h4 title="Data has been cleaned for performance data issues.
+Final samples may differ due to assessment data issues, 
+manual re-classifcations, or other analyst judgments.">Inter-item Correlations</h4>	    
+	    {{ corrs_items | safe }}
+	    </div>	    
+	    
+	    <div class="container" id="covariate_summary" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <h4 title="Ratio values represent the proportion of observations
+to the number of observed levels for the given covariate or factor.
+Ratio values over 10 can be analyzed with confidence.
+Data has been cleaned for performance data issues.
+Final samples may differ due to assessment data issues, 
+manual re-classifcations, or other analyst judgments.">Covariate Summary</h4>
+	    {{ covariate_summary | safe }}
+	    </div>
+	    
+	    <br><br>
+	    <div class="card"  style="height: 66px; text-align:center">
+	    <p>When you are ready to continue on with merging your matched predictor data,<br>
+	    click the "Continue on" button just below.
+	    </p>    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+			<form name="local_form_canstyle2" id="local_form_canstyle2" action="{% url 'twister:match_and_merge' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ k }}" name="k"/>
+			    <input type="hidden" value="{{ tenure_label }}" name="tenure_label"/>
+			    <input type="hidden" value="{{ tenure_rem_label }}" name="tenure_rem_label"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ start_time }}" name="start_time"/>			    
+			    <p><input type="submit" id="continue_on" name="submitButton" value="Continue on" onclick="checkParameters();return false;"/></p>
+			</form>
+		</div>
+	    </div>
+	    <br>
+	    <br>
+	    <br>
+	</div>
+</div>
+</html>
+
+{% endblock %}

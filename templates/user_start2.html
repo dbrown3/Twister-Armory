@@ -1,0 +1,115 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+img {
+	width: 100%;
+	height: 100%;
+}
+
+h2 {
+	color:#54A1D3;
+}
+
+table {
+	
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	
+	}
+
+th, td {
+    
+    padding: 5px;
+    text-align: center;
+    height: 200%;
+	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+    
+
+
+#local_form_canstyle {
+	padding: 0% 39%;
+}
+
+#submitButton {
+
+	background-color: #F0F0F0;
+	color: black;
+	width: 260px;
+
+}
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Evaluate Rater Confidence</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    <p align="center">Low rater confidence can indicate poor quality performance data.<br>
+		Twister recommends accepting 'A' as the lowest acceptable rater confidence level,<br>
+	    but small sample sizes may be prohibitive.<br>
+	    <br>The table below displays number of cases removed at each confidence level.<br>
+	    <br><br>
+	    
+	    
+	    {{ conf_pivot | safe }}
+	    
+	    </div>
+	    
+	    <br><br>
+	    <div class="card"  style="height: 66px; text-align:center">
+	    	<p align="center">Select minimum acceptable confidence level,<br>
+	    	then Click the Button.</p>
+	    </div>
+	    
+	    <br>
+	    <div style="align:center" style="height: 100px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:rater_conf' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ k }}" name="k"/>
+			    <input type="hidden" value="{{ start_time }}" name="start_time"/>
+			    	    
+                <a style="align:center">  {{ rater_conf_form.confidence_name }} </a>
+                                
+			    <br><br>
+			    <p><input type="submit" id="submitButton" name="submitButton" value="Click to set Minimum Confidence Level" onclick="checkParameters();return false;"/></p>
+			    
+			</form>
+		</div>
+	    
+
+	</div>
+</div>
+</html>
+
+{% endblock %}

@@ -1,0 +1,241 @@
+{% block mainContent %}
+{%  load static %}
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+</head>
+<style>
+
+img {
+	width: 100%;
+	height: 100%;	
+}
+
+h2 {
+	color:#54A1D3;
+}
+
+table {
+	
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	
+	}
+
+th, td {
+    
+    padding: 5px;
+    text-align: center;
+    height: 200%;
+	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+    
+
+
+#local_form_canstyle {
+	padding: 0% 39%;
+}
+
+#submitButton {
+
+	background-color: #F0F0F0;
+	color: black;
+	width: 260px;
+
+}
+
+.dot {
+  fill: #69B5DD;
+}
+
+.dot:hover {
+  fill: #DE8181;
+  r: 8;
+}
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Set Tenure Requirement</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>	    
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    <p align="center">Perfect! Now let's look at tenure.<br>
+	    <br>You may need to consider your sample size before deciding on tenure requirement.<br>
+	    To help you, Twister displays some tenure<br>
+		statistics in the table below.<br>
+		The display shows how many cases are excluded at<br>
+	    a few common tenure cutoffs.<br>
+	    <br>Next to exclusion counts are the correlations between tenure<br>
+	    and performance in the remaining sample if that tenure cutoff is chosen.<br>
+	    <br>
+	    Please note that these correlation estimates have not been cleaned for<br>
+	    assessment-side removals like Not Matching and Assessment Quality Control.
+	    <br><br>
+	    </div>
+	    
+	    <div class="card" title="For example, if tenure requirement is 30 days, then {{ 30_Cases_Excluded | safe }} cases would be excluded
+and the correlation between tenure and performance in the remaining sample would be r = {{ 30_r_perf_tenure | safe }}."  
+	    style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    {{ df_tenure_report | safe }}
+	    </div>
+	    
+	    <br><br>
+	    <div class="card"  style="height: 66px; text-align:center">
+	    	<p align="center">Type in the tenure requirement (in days),<br>
+	    	then Click the Button Below.</p>
+	    </div>
+	    
+	    <br>
+	    <div style="align:center" style="height: 100px">
+			<form name="local_form_canstyle" id="local_form_canstyle" action="{% url 'twister:show_and_match' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <input type="hidden" value="{{ master_data }}" name="master_data"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ tenure_label }}" name="tenure_label"/>
+			    <input type="hidden" value="{{ tenure_rem_label }}" name="tenure_rem_label"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ k }}" name="k"/>
+			    <input type="hidden" value="{{ start_time }}" name="start_time"/>
+			    
+			    
+			    <input data-mask="##" id="tenure_req" name="tenure_req" placeholder="##" type="text" />	    
+                
+                                
+			    <br><br>
+			    <p><input type="submit" id="submitButton" name="submitButton" value="Click to set Tenure Requirement" onclick="checkParameters();return false;"/></p>
+			    
+			</form>
+		</div>
+	    
+	    
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h4 title="Data has been cleaned for performance data issues.
+Final samples may differ due to assessment data issues, 
+manual re-classifcations, or other analyst judgments.">Tenure and Performance in Operational Dataset (n = <a id='sample_n'></a>)</h4>
+	    </div>
+	    
+	    
+	    <div class="card" id="this_card" style="height: 100%; width:100%; text-align:center;padding: 0% 0%;">
+	    <script type="text/javascript">
+			
+		
+		tenure =  {{ tenure_plot_tenure }};
+		perf = {{ tenure_plot_perf }};
+		
+		d3.select("#sample_n")
+		                .append("text")
+		                .text(tenure.length);	
+		data = [];
+		
+		for (i = 0; i < tenure.length; i++) {			
+			console.log(tenure[i]);
+			console.log(perf[i]);	
+			
+			teeny = +tenure[i];
+			perfy = +perf[i];
+			
+			data[i] = {"Tenure":teeny,"Performance":perfy}
+			};
+		
+		view_width = window.innerWidth * .66;
+		view_height = window.innerHeight * .75;
+			
+		var margin = {top: view_height*.05, right: view_width*.05, bottom: view_height*.04, left: view_width*.10};
+		
+		w = view_width - margin.left - margin.right;
+		h = view_height - margin.top - margin.bottom;
+		
+		var x = d3.scale.linear()
+		    .range([0, w]);
+		
+		var y = d3.scale.linear()
+		    .range([h, 0]);
+						
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+		
+		var yAxis = d3.svg.axis()
+		    .scale(y)
+		    .orient("left");
+		
+		var svg = d3.select("#this_card")
+		                .append("svg")
+		                .attr("width", w + margin.left + margin.right)
+    					.attr("height", h + margin.top + margin.bottom)
+    					.append("g")
+    					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
+		// Compute the scales domains.
+		 x.domain(d3.extent(data, function(d) { return d['Tenure']; })).nice();
+  		 y.domain(d3.extent(data, function(d) { return d['Performance']; })).nice();
+		
+	   	svg.append("g")
+		      .attr("class", "x axis")
+		      .attr("transform", "translate(0," + h + ")")
+		      .call(xAxis)
+		    .append("text")
+		      .attr("class", "label")
+		      .attr("x", w)
+		      .attr("y", -6)
+		      .style("text-anchor", "end")
+		      .text("Tenure (days)");
+		
+		  // Add the y-axis.
+		  
+		  svg.append("g")
+		      .attr("class", "y axis")
+		      .call(yAxis)
+		    .append("text")
+		      .attr("class", "label")
+		      .attr("transform", "rotate(-90)")
+		      .attr("x", -(h*.5))
+		      .attr("y", -(w*.09))
+		      .attr("dy", ".71em")
+		      .style("text-anchor", "middle")
+		      .text("Performance (given units)")
+		
+		   svg.selectAll(".dot")
+		      .data(data)
+		    .enter().append("circle")
+		      .attr("class", "dot")
+		      .attr("r", 4.5)
+		      .attr("cx", function(d) { return x(d['Tenure']); })
+		      .attr("cy", function(d) { return y(d['Performance']); });
+		
+	    </script>
+	    </div>   
+	    <br>
+	    <br>
+	    <br>
+
+	</div>
+</div>
+</html>
+
+{% endblock %}
