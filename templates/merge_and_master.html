@@ -1,0 +1,279 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{%  load static %}
+
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+</head>
+
+
+<style>
+
+h4 {
+	color: #69B5DD;
+
+}
+
+#file_upload {
+	text-align: center;
+} 
+
+#local_form_canstyle {
+	padding: 0% 43%;
+}
+
+input#twisterButton {
+	width: 220px;
+	background-color:#76B051;
+	color:white;
+	border-color:white;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+input#twisterButton:hover {
+	width: 220px;
+	background-color: #397514;
+	color:white;
+	border-color:white;
+	height: 24px;
+	-webkit-border-radius: 28;		
+}
+
+button#cso_button {
+	background-color: #69B5DD;
+	color: white;
+	width: 220px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+button#cso_button:hover {
+	background-color: #368AC0;
+	color: white;
+	width: 220px;
+	height: 24px;
+	-webkit-border-radius: 28;
+}
+
+button#final_data {
+	background-color: white;
+	color: black;
+	width: 220px;
+	height: 24px;
+	border-color:black;
+	-webkit-border-radius: 28;
+}
+
+button#final_data:hover {
+	background-color: black;
+	color: white;
+	width: 220px;
+	height: 24px;
+	border-color:black;
+	-webkit-border-radius: 28;
+}
+
+input#bs_name_text {
+	background-color:white;
+	width:75px;
+	color:black;
+	text-align:center;
+}
+
+input#profile_name_text {
+	background-color:white;
+	color:black;
+	text-align:center;
+	width:300px;
+}
+
+div#bs_name {
+	width:460px;
+}
+
+#star {
+	color:#F2BC41;
+	fill:#F2BC41;
+}
+
+#timer_hide {
+	border:none; 
+	background-color:transparent;
+}
+
+
+table {
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	}
+
+th, td {   
+    padding: 5px;
+    text-align: center;
+    height: 200%;	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+
+
+</style>
+
+
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Go Forth and Build</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>
+	   	
+	   	<div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+	    
+	    <p align="center">All done!<br>
+	    <br>
+	    Click the Export button below to access the final data in (*.xls) format.<br>
+	    The final data should contain all of the original data and cases,<br>
+	    along with the standard profile creation columns first,<br>
+	    some computed statistics, the 39 predictor dimensions of PPI2+PMA,<br>
+	    the QC columns and the 'Removal' columns.<br>
+	    <br>
+		If you are happy with all of the removal reasons and the final metric,<br>
+		then you can use the 'Removal' columns to filter out all of the removed cases<br>
+		and copy-paste the first nine columns directly into Profile Creation tool.<br>
+		<br>
+		Alternatively, you can use the FinalResults data file to further analyze or<br>
+		re-classify the data before building a profile.<br>
+		If anything seems wrong, feel free to go back to the User Start screen<br>
+		and re-run the program. 
+	    </p>	    
+	    
+	    <form name="local_form_canstyle2" id="local_form_canstyle2" action="{% url 'twister:click_final_export' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}			    
+			    <input type="hidden" value="{{ data10 }}" name="data10"/>
+			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>    
+			                                     
+			    <br><br>
+			    <p><input title="FinalResults is an (*.xls) file
+containing the final and original data merged into a Master file.
+Use the 'Removal' columns in the far-right of the data file to
+filter down to your final sample.
+Then, the first 9 columns can be directly copy-pasted
+into Profile Creation Tool.
+The Performance metric is the average of the metric columns.
+Further custom analyses and re-classifications can be performed
+prior to going to Profile Creation if you desire.
+"
+				type="submit" id="twisterButton" name="submitButton" value="Click to Export FinalResults" onclick="checkParameters();click_spin_export();return false;"/></p>
+			    
+			</form>
+			</div>
+			<div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 6%;">			
+		
+	    <button type="button" title="Exposes the client sign-off information.
+If you are happy with the final removals as-is
+and the final metric, the cso text can be copy-pasted
+directly into an e-mail."
+		id="cso_button"style="text-align:center;padding: 0% 0%;" class="btn btn-info" data-toggle="collapse" data-target="#bs_name">Click to Expose CSO</button>
+	    
+	    <div class="collapse" id="bs_name"style="height: 100%; width:100%; text-align:left;padding: 2% 20%;;">
+	    <p><br><br>
+	    Hi <input data-mask="Patricia" id="bs_name_text" name="bs_name" placeholder="Patricia" type="text" />,<br>
+	    <br>
+	    Here is the client sign-off information for the <input data-mask="Justice League 7 Sep16 - Detective 1.00" id="profile_name_text" name="profile_name_text" placeholder="Justice League 7 Sep16 - Detective 1.00" type="text" /> profile --<br>
+	    <br>
+	    Initial sample size: {{ start_sample }}
+	    <br>
+	    <ul>
+		  {% for bullet in cso_actual_bullets %}
+		    <li>{{ bullet }}</li>
+		  {% endfor %} 
+		</ul>
+	    <br>
+	    Final sample size: {{ final_sample }}
+	    <br><br>
+	    <h4>Performance Metric: Overall Performance Rating</h4>
+	    <br>
+	    {{ metric_avg }}
+	    <ul>
+	    <li>{{ metric_min }}</li>
+	    <li>{{ metric_max }}</li>
+	    </ul>
+	    <br>
+	    Please let me know if I can provide any further information.
+	    <br><br>
+	    Thanks,<br>
+	    Twister
+	    </p>
+			   		
+	    </div>
+	<br><br><br>
+	<button type="button" title="When speed is your goal.
+Exposes the Final Data that can be
+directly copy-pasted into Profile Creation.
+Final Data assumes that you have accepted all of Twister's
+automated removals and scale computations."
+		id="final_data"style="text-align:center;padding: 0% 0%;" class="btn btn-info" data-toggle="collapse" data-target="#twisted_final">Click to Expose Twisted Final</button>
+	    
+	    <div class="collapse" id="twisted_final"style="height: 100%; width:100%; text-align:left;padding: 4% 0%;;">
+	  	
+	  	{{ final_final_data | safe }}
+			   		
+	    </div>	    
+	</div>
+	
+	<div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:index' %}"><img id="star" title="Claim your victory" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/star-filled.svg' %}"/></a>
+	</div>
+	
+	<div class="card"  style="height: 100px; text-align:center; padding: 5% 0%;">
+	    	<button id="timer_hide" onclick="submitBeatBestForm();"><img id="timer" onclick="submitBeatBestForm();" title="Beat the best" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/timer.svg' %}"/></button>    	
+	</div>
+	
+	<div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+			<form name="local_form_canstyle3" id="local_form_canstyle3" action="{% url 'twister:scoreboard' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}
+			    			   
+			    <input type="hidden" value="{{ beat_time }}" name="beat_time"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
+			    <input type="hidden" value="{{ start_sample }}" name="start_sample"/>	
+			    <input type="hidden" value="{{ final_sample }}" name="final_sample"/>
+			  
+			    				    
+			</form>
+	</div>	
+	
+</div>
+<br><br>
+
+<script>
+
+function submitBeatBestForm() {
+    document.getElementById("local_form_canstyle3").submit();
+}
+
+</script>
+
+</html>
+
+{% endblock %}
