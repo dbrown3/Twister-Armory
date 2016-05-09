@@ -18,6 +18,7 @@ import string
 import StringIO
 from datetime import datetime
 import sys
+import os
 #import sklearn
 #import pyttsx
 #import time
@@ -60,11 +61,15 @@ def index(request):
 #or to user_start2 "more info" link on the bottom of the html links user to full_docs.html 
 def user_start(request):
     context = dict()
+    start_time = str(datetime.now().time())    
+    
+    
     version_now = "'i don't want to leave no mysteries - Dave Chappelle'"   
     context["version_now"] = version_now
     
     data_entry_form = DataEntryForm()
     context['data_entry_form'] = data_entry_form
+    context['start_time'] = start_time
         
     return render(request, 'twister/user_start.html', context)
 
@@ -74,9 +79,9 @@ def user_start(request):
 def create_new_study(request):
     #assert False
     context = dict()
-    
+    start_time = request.POST.get('start_time')
     csv_file = request.FILES['csv_file']
-    
+    #print csv_file, type(csv_file)
     twister_data_uploader = TwisterDataUploader()
     
     with open(twister_data_uploader.file_system.location + "/" + csv_file.name, 'wb+') as destination:
@@ -86,9 +91,11 @@ def create_new_study(request):
     twister_data_uploader.read_csv_data_from_file(csv_file)
     #print twister_data_uploader.column_headers
     
+    na_codes = ['NULL','-99', 'N/A', 'n/a' '#N/A', 'blank','insufficient tenure']
+    
     data = pd.read_csv(twister_data_uploader.file_system.location + "/" + csv_file.name,\
                                index_col=['Ratee Unique ID', 'Rater Unique ID'], \
-                               na_values=['NULL','-99', 'N/A', 'n/a' '#N/A', 'blank','insufficient tenure'])   
+                               na_values=na_codes)   
     
     '''FIRST WE GET AS FAR AS WE CAN WITH DATA MANIPULATION'''
     '''DEDUCE THE NUMBER OF ITEMS FOR MANY IMPORTANT OPERATIONS'''
@@ -163,6 +170,8 @@ def create_new_study(request):
     context['col_headers'] = headerpacker(data) #takes a dataframe and returns an ordered json string of column headers
     context['master_data'] = data.to_json()
     context['in_name'] = in_name
+    context['start_time'] = start_time
+    #context['na_codes'] = na_codes
     context['k'] = k
          
     return render(request, 'twister/create_new_study.html', context)
@@ -173,6 +182,7 @@ def create_new_study(request):
 def user_start2(request):
     #assert False
     context = dict()
+    start_time = request.POST.get('start_time')
     #master data was passed from 'create_new_study', this is where Twister
     #would begin with rater confidence analyses
     
@@ -212,6 +222,7 @@ def user_start2(request):
     context['rater_conf_form'] = conf_level_form
     context['rata'] = rata.to_html()
     context['in_name'] = in_name
+    context['start_time'] = start_time
     context['k'] = k   
     
     #we'll send this to rater_conf in the form submission, which iis in the .html
@@ -221,6 +232,7 @@ def user_start2(request):
 def rater_conf(request):
     
     context = dict()
+    start_time = request.POST.get('start_time')
     
     '''RETRIEVE THE MINIMAL CONFIDENCE LEVEL'''
     k = int(request.POST.get('k'))
@@ -251,6 +263,7 @@ def rater_conf(request):
     context['col_headers'] = headerpacker(data)
     context['master_data'] = data.to_json()    
     context['in_name'] = in_name
+    context['start_time'] = start_time
     context['k'] = k
     
     return render(request, 'twister/rater_conf.html', context)
@@ -259,6 +272,7 @@ def rater_conf(request):
 def tenure_ask(request):
     #assert False
     context = dict()
+    start_time = request.POST.get('start_time')
     
     collection_date = request.POST['date_field']
     k = int(request.POST.get('k'))
@@ -343,6 +357,7 @@ def tenure_ask(request):
     context['tenure_label'] = tenure_label
     context['tenure_rem_label'] = tenure_rem_label
     context['in_name'] = in_name
+    context['start_time'] = start_time
     context['k'] = k    
       
     #we'll send this to rater_conf in the form submission, which iis in the .html
@@ -353,6 +368,7 @@ def tenure_ask(request):
 def show_and_match(request):
     #assert False
     context = dict()
+    start_time = request.POST.get('start_time')
     
     tenure_req = int(request.POST['tenure_req'])
     k = int(request.POST['k'])
@@ -775,6 +791,7 @@ def show_and_match(request):
     context['tenure_label'] = tenure_label
     context['tenure_rem_label'] = tenure_rem_label
     context['in_name'] = in_name
+    context['start_time'] = start_time
     context['k'] = k   
                
     #we'll send this to show_and_match in the form submission, which is in the .html
@@ -784,6 +801,8 @@ def show_and_match(request):
 
 def match_and_merge(request):
     context = dict()
+    start_time = request.POST.get('start_time')
+    
     
     #Keep what you need moving forward. Derek's Twister is fairly self-contained, but needs
     # spin_master which is merged with the newly csv_read data_match dataframe taken from this dataentry form
@@ -791,7 +810,7 @@ def match_and_merge(request):
     #I don't convert these out of their json form because i'm just passing them to the next view
     context['col_headers'] = request.POST.get('col_headers')   
     context['master_data'] = request.POST.get('master_data') 
-               
+    context['start_time'] = start_time
     context['in_name'] = str(request.POST.get('in_name'))
     context['tenure_label'] = str(request.POST.get('tenure_label'))
     context['tenure_rem_label'] = str(request.POST['tenure_rem_label'])
@@ -799,7 +818,7 @@ def match_and_merge(request):
     #these two will be used to capture the .csv file        
     data_entry_form = DataEntryForm()
     context['data_entry_form'] = data_entry_form
-    context['tenure_rem_label']
+    
     
             
     return render(request, 'twister/match_and_merge.html', context)
@@ -808,6 +827,10 @@ def match_and_merge(request):
 
 def merge_and_master(request):
     context = dict()
+    
+    end_time = str(datetime.now().time())
+    
+    start_time = request.POST.get('start_time')
     
     in_name = str(request.POST.get('in_name'))
     tenure_label = str(request.POST.get('tenure_label'))
@@ -1117,6 +1140,12 @@ def merge_and_master(request):
            
            remdata_temp = remdata_temp[remdata_temp[cso_removal_headers[0:i+1]].sum(axis=1)==0]
     
+    
+    time_format = "%H:%M:%S"
+
+    beat_time = datetime.strptime(end_time.split('.')[0],time_format) - datetime.strptime(start_time.split('.')[0],time_format)
+    beat_time = str(beat_time)
+    #print beat_time
         
     context['cso_actual_bullets'] = cso_actual_bullets
     context['start_sample'] = len(spin_master)
@@ -1124,11 +1153,18 @@ def merge_and_master(request):
     context['metric_avg'] = "Average score: {}".format(("%.2f" % Final_Data['Item Avg'].mean()))    
     context['metric_min'] = "Min: {}".format(("%.2f" % Final_Data['Item Avg'].min()))
     context['metric_max'] = "Max: {}".format(("%.2f" % Final_Data['Item Avg'].max()))
+    
+    #for beat_the_best
+    context['beat_time'] = beat_time
+    context['beat_days'] = beat_time.split(":")[0]
+    context['beat_minutes'] = beat_time.split(":")[1]
+    context['beat_seconds'] = beat_time.split(":")[2]
         
                 
     return render(request, 'twister/merge_and_master.html', context)
 
-
+#out of merge_and_master, there are two icons: claim prize and beat the best
+#claim prize exports a randomly chosen item from the static/dlc folder
 
 def click_spin_export(request):
              
@@ -1285,11 +1321,85 @@ def compute_cronbachs(k,data_spinalysis):
     new_summary = pd.concat([item_summary,alpha_wo_frame])    
     
     return new_summary
+
+
+def scoreboard(request):
+    context = dict()
+    beat_time = str(request.POST.get('beat_time'))
+    in_name = str(request.POST.get('in_name'))
+    start_sample = str(request.POST.get('start_sample'))
+    final_sample = str(request.POST.get('final_sample'))  
     
     
+    scoreboard_input_data = os.getcwd() + '/twister/templates/twister/scoreboard_stock.csv'
+    ifile = open(scoreboard_input_data, "r+")    
+    top_scores = pd.read_csv(ifile) 
+    ifile.close()
+    
+    version_now = "'i don't want to leave no mysteries - Dave Chappelle'"   
+    
+    top_scores['old_new'] = 0
+    beat_score = {'Beat Time':beat_time,'Data':in_name,'Field Sample':start_sample,'Pure Sample':final_sample, 'old_new':1}      
+    all_scores = top_scores.append(beat_score,ignore_index=True)  
+    
+    #Don't overwrite Beat Time, use another temp column bc formatting timedelta is a nightmare
+    #use it to sort, then delete it
+    
+    beat_list = all_scores['Beat Time'].values
+    sec_list = []
+    for i in beat_list:
+        ds = int(i.split(':')[0].split(',')[-1])*60*60*24
+        ms = int(i.split(':')[1])*60
+        s = int(i.split(':')[2])
+        sec_list = sec_list + [ds+ms+s]
+
+    
+    all_scores['Beat Time_deleteme'] = sec_list
+    all_scores.sort(columns=['Beat Time_deleteme'],inplace=True)
+    
+    i = 0
+    beat_rank = 7
+    for i in range(0,len(all_scores.old_new.values)):
+        if all_scores.old_new.values[i] == 1:
+            beat_rank = i + 1
+
+    
+    del all_scores['Beat Time_deleteme'], sec_list, all_scores['old_new']
+    #comment based on beat_time's ranking
+    
+    top_scores = all_scores.iloc[:5]
+
+    
+    if beat_rank == 1:
+        beat_comment = 'You are the Best! The Twister gods are pleased.'
+    elif beat_rank == 2:
+        beat_comment = 'Great time! Nearly the best.'
+    elif beat_rank == 3:
+        beat_comment = 'A valiant effort! You have made the top three.'
+    elif beat_rank == 4:
+        beat_comment = 'Congratulations! You have a top time.'
+    elif beat_rank == 5:
+        beat_comment = 'Way to go! You are on the board.'
+    else:
+        beat_comment = 'The Twister gods demand more sacrifice.'       
     
     
+    ifile = open(scoreboard_input_data, "w")    
+    all_scores.to_csv(ifile,index=False) 
+    ifile.close()  
     
     
+    context['beat_comment'] = beat_comment
+    context['top_scores'] = top_scores.to_html(index=False)
     
+    context['in_name'] = in_name
+    context['version_now'] = version_now
     
+    context['start_sample'] = start_sample
+    context['final_sample'] = final_sample
+    context['beat_time'] = beat_time
+    context['beat_days'] = beat_time.split(":")[0]
+    context['beat_minutes'] = beat_time.split(":")[1]
+    context['beat_seconds'] = beat_time.split(":")[2]
+        
+    return render(request, 'twister/scoreboard.html', context)
