@@ -81,7 +81,7 @@ def create_new_study(request):
     context = dict()
     start_time = request.POST.get('start_time')
     csv_file = request.FILES['csv_file']
-    #print csv_file, type(csv_file)
+    
     twister_data_uploader = TwisterDataUploader()
     
     with open(twister_data_uploader.file_system.location + "/" + csv_file.name, 'wb+') as destination:
@@ -775,8 +775,10 @@ def show_and_match(request):
     scale_summary = df_report.ix[0:3,['Label','Values']]
     covariate_summary = df_report.ix[5:,:]
     
-
-   
+    short_heads = shorten_labels(corrs_items.index.values)    
+    corrs_items.index = short_heads
+    
+       
     '''VISUALIZING PERFORMANCE VARIABLE'''
            
     #zata is a df assuming 'Z_Item Avg' is standardized perf column
@@ -1143,8 +1145,45 @@ def merge_and_master(request):
     
     time_format = "%H:%M:%S"
 
-    beat_time = datetime.strptime(end_time.split('.')[0],time_format) - datetime.strptime(start_time.split('.')[0],time_format)
-    beat_time = str(beat_time)
+    end_time_sec = int(end_time.split('.')[0].split(":")[0])*60*60 + int(end_time.split('.')[0].split(":")[1])*60 + int(end_time.split('.')[0].split(":")[2])
+    start_time_sec = int(start_time.split('.')[0].split(":")[0])*60*60 + int(start_time.split('.')[0].split(":")[1])*60 + int(start_time.split('.')[0].split(":")[2])
+    
+    beat_time_sec = end_time_sec - start_time_sec
+    
+    if beat_time_sec < 60:
+        beat_time_seconds = beat_time_sec
+        beat_time_minutes = 0
+        beat_time_hours = 0
+    elif beat_time_sec < (60*60):
+        beat_time_hours = 0
+        beat_time_minutes = beat_time_sec / 60
+        try:
+            beat_time_seconds = beat_time_sec % 60
+        except:
+            beat_time_seconds = 0
+    else:
+        beat_time_hours = beat_time_sec / (60*60)
+        if beat_time_sec % 60*60 == 0:
+            beat_time_minutes = 0
+            beat_time_seconds = 0
+        else:
+            beat_time_minutes = beat_time_sec % 60*60
+            if beat_time_sec % 60 == 0:
+                beat_time_seconds = 0
+            else:
+                beat_time_seconds = (beat_time_sec % 60*60) % 60
+
+    
+    if beat_time_minutes < 10:
+        beat_time_minutes = '0{}'.format(beat_time_minutes)
+    else:
+        pass
+    if beat_time_seconds < 10:
+        beat_time_seconds = '0{}'.format(beat_time_seconds)
+    else:
+        pass
+
+    beat_time = "{}:{}:{}".format(beat_time_hours,beat_time_minutes,beat_time_seconds)
     #print beat_time
         
     context['cso_actual_bullets'] = cso_actual_bullets
@@ -1156,9 +1195,10 @@ def merge_and_master(request):
     
     #for beat_the_best
     context['beat_time'] = beat_time
-    context['beat_days'] = beat_time.split(":")[0]
-    context['beat_minutes'] = beat_time.split(":")[1]
-    context['beat_seconds'] = beat_time.split(":")[2]
+    context['beat_time_sec'] = beat_time_sec #actual seconds of beat time
+    context['beat_hours'] = beat_time.split(":")[0] #string formatted for clock like display
+    context['beat_minutes'] = beat_time.split(":")[1] #string formatted for clock like display
+    context['beat_seconds'] = beat_time.split(":")[2] #string formatted for clock like display
         
                 
     return render(request, 'twister/merge_and_master.html', context)
@@ -1266,6 +1306,19 @@ def headerpacker(dataframe):
     return header_frame.to_json()
 
 
+def shorten_labels(list): #used to make item-corr table row labels more readable
+    long_labels = list
+    
+    short_heads = []
+    for head in long_labels:
+        try:
+            short_heads = short_heads + [str(head)[:25]]
+        except:
+            short_heads = short_heads + head
+
+    return short_heads
+
+
 def click_final_export(request):
              
     in_name = str(request.POST.get('in_name'))
@@ -1326,6 +1379,8 @@ def compute_cronbachs(k,data_spinalysis):
 def scoreboard(request):
     context = dict()
     beat_time = str(request.POST.get('beat_time'))
+    
+    
     in_name = str(request.POST.get('in_name'))
     start_sample = str(request.POST.get('start_sample'))
     final_sample = str(request.POST.get('final_sample'))  
@@ -1348,10 +1403,10 @@ def scoreboard(request):
     beat_list = all_scores['Beat Time'].values
     sec_list = []
     for i in beat_list:
-        ds = int(i.split(':')[0].split(',')[-1])*60*60*24
+        hs = int(i.split(':')[0].split(',')[-1])*60*60
         ms = int(i.split(':')[1])*60
         s = int(i.split(':')[2])
-        sec_list = sec_list + [ds+ms+s]
+        sec_list = sec_list + [hs+ms+s]
 
     
     all_scores['Beat Time_deleteme'] = sec_list
@@ -1367,9 +1422,6 @@ def scoreboard(request):
     del all_scores['Beat Time_deleteme'], sec_list, all_scores['old_new']
     #comment based on beat_time's ranking
     
-    top_scores = all_scores.iloc[:5]
-
-    
     if beat_rank == 1:
         beat_comment = 'You are the Best! The Twister gods are pleased.'
     elif beat_rank == 2:
@@ -1383,6 +1435,8 @@ def scoreboard(request):
     else:
         beat_comment = 'The Twister gods demand more sacrifice.'       
     
+    all_scores.drop_duplicates(inplace=True)
+    top_scores = all_scores.iloc[:5]
     
     ifile = open(scoreboard_input_data, "w")    
     all_scores.to_csv(ifile,index=False) 
@@ -1398,8 +1452,28 @@ def scoreboard(request):
     context['start_sample'] = start_sample
     context['final_sample'] = final_sample
     context['beat_time'] = beat_time
-    context['beat_days'] = beat_time.split(":")[0]
+    context['beat_hours'] = beat_time.split(":")[0]
     context['beat_minutes'] = beat_time.split(":")[1]
     context['beat_seconds'] = beat_time.split(":")[2]
         
     return render(request, 'twister/scoreboard.html', context)
+
+
+def prizes(request): #choose from dlc directory and serve to user
+    
+    context = dict()
+    
+    '''
+    try:
+        with open(valid_image, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/jpeg")
+    except IOError:
+        red = Image.new('RGBA', (1, 1), (255,0,0,0))
+        response = HttpResponse(content_type="image/jpeg")
+        red.save(response, "JPEG")
+        return response
+    #response = HttpResponse(xls_output,content_type='application/vnd.ms-excel')
+    #response['Content-Disposition'] = 'attachment; filename="{}"'.format(xls_out)
+    '''
+    
+    return render(request, 'twister/prizes.html', context)
