@@ -1,0 +1,45 @@
+{% extends "backendBase.html" %}
+{% block mainContent %}
+{% load static %}
+
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+</head>
+
+
+<style>
+
+</style>
+
+
+
+<div id="maincontent" class="page-container scrollable" role="main">
+	<div class="single-column">
+    
+		{% csrf_token %}
+	   
+		<iframe width="420" height="345" allowfullscreen>
+			src="https://www.youtube.com/watch?v=R0V_D4zaEpU">
+		</iframe>  
+	   
+	   
+	</div>		
+</div>
+
+
+<script>
+
+function submitBeatBestForm() {
+    document.getElementById("local_form_canstyle3").submit();
+}
+
+</script>
+
+</html>
+
+{% endblock %}
