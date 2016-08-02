@@ -1,0 +1,117 @@
+{% block mainContent %}
+{%  load static %}
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+
+</head>
+<style>
+
+img {
+	width: 100%;
+	height: 100%;	
+}
+
+h2,h3,h4 {
+	color:#54A1D3;
+}
+
+
+
+table {
+	
+	align: center;
+	width:90%;
+	border: 0;
+	text-align: center;
+	
+	}
+
+th, td {
+    
+    padding: 5px;
+    text-align: center;
+    height: 200%;
+	
+	}
+
+table tr:nth-child(even) {
+    background-color: #CBEBF4;
+    }
+    
+#corr_matrix {
+	align:center;
+}
+    
+
+</style>
+
+<div id="maincontent" class="page-container scrollable" role="main">
+
+  <div class="single-column">
+    
+	    {% csrf_token %}
+	    <div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
+	    	<a href="{% url 'twister:user_start' %}"><img id="twister_pic" title="Back to user start screen" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/twister.png' %}"/></a>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h2>Red Pill</h2>
+	    </div>
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 0% 0%;"> 
+	    <p><i>Working with performance data file: <b>{{in_name}}</b></i><p>
+	    </div>	    
+	    
+	    <div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 2%;"> 
+	    <h4>See What's Next</h4>
+	    </div>
+	  
+	    
+	    <div class="container" id="dims_weights" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <h4 title="Final Data has been cleaned for criterion and predictor data issues.">Dimension Weights</h4>	    
+	    {{ dims_weights | safe }}
+	    </div>
+	    
+	    <div class="container" id="corr_matrix" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    <h4 title="Final Data has been cleaned for criterion and predictor data issues.">Profile Model Correlations</h4>	    
+	    {{ corr_matrix | safe }}
+	    </div>
+	    	
+	    
+	    <div class="card" style="height: 100%; width:100%; text-align:center;padding: 2% 2%;">
+	    {{ data_final | safe }}
+	    </div>
+	    
+	     	    
+	    <div class="card" id="this_card" style="height: 100%; width:100%; text-align:center;padding: 0% 0%;">
+	    <script>
+
+		var table = document.getElementById("corr_matrix_table");
+		for (var i = 0, row; row = table.rows[i]; i++) {
+		   for (var j = 0, col; col = row.cells[j]; j++) {
+		     if (i==j) {
+		     	console.log(i,j);
+		     	console.log(table.rows[i].cells[j]);
+		     	table.rows[i].cells[j].style.fontWeight = "bold";
+		     };
+		   };  
+		};		
+		
+		</script>
+	    </div>   
+	    <br>
+	    <br>
+	    <br>
+
+	</div>
+</div>
+</html>
+
+{% endblock %}

@@ -19,8 +19,10 @@ import StringIO
 from datetime import datetime
 import sys
 import os
+from twister.models import AllScores
 #import sklearn
-#import pyttsx
+import pyttsx
+import geoip2.webservice
 #import time
 
 
@@ -31,15 +33,17 @@ pd.set_option('mode.chained_assignment',None)
 
 rata = pd.DataFrame()
 
+
 # Twister's index is a data visualization of binary numbers swirling like a twister.
 #the index template responds to mouse click to send user to user_start
+
 '''
-need pyttsx for this
-def bang_speak(text_string):
+#need pyttsx for this
+def bang_speak():
     engine = pyttsx.init()
     engine.setProperty('volume', 1.00)
     engine.setProperty('rate', 150)
-    engine.say(text_string)
+    engine.say("Hello user")
     engine.runAndWait()
     return
 '''
@@ -49,11 +53,12 @@ def index(request):
     #goodbye = "Thanks, that's all for me"   
     #bang_speak(goodbye)
 
-    context ['first_name'] = " Phillip "
+    context['first_name'] = " Phillip "
     context['last_name'] = " Gilmore "
     #return HttpResponse("The sky grows dark...") ; this is its jsut a direct Response
+    print "Twister", get_client_ip(request)
+    
     return render(request, 'twister/index.html', context)
-
 
 
 #user_start.html is the intro instructions, and offering performance data file selector
@@ -63,6 +68,7 @@ def user_start(request):
     context = dict()
     start_time = str(datetime.now().time())    
     
+    #bang_speak()
     
     version_now = "'i don't want to leave no mysteries - Dave Chappelle'"   
     context["version_now"] = version_now
@@ -70,7 +76,11 @@ def user_start(request):
     data_entry_form = DataEntryForm()
     context['data_entry_form'] = data_entry_form
     context['start_time'] = start_time
-        
+    
+    print "user_start", get_client_ip(request)
+    #ip_locator = geoip2()
+    #client_ip = 10.48.24.244
+            
     return render(request, 'twister/user_start.html', context)
 
 
@@ -91,7 +101,7 @@ def create_new_study(request):
     twister_data_uploader.read_csv_data_from_file(csv_file)
     #print twister_data_uploader.column_headers
     
-    na_codes = ['NULL','-99', 'N/A', 'n/a' '#N/A', 'blank','insufficient tenure']
+    na_codes = ['NULL','-99', 'N/A', 'n/a' '#N/A', 'blank','insufficient tenure','TBD']
     
     data = pd.read_csv(twister_data_uploader.file_system.location + "/" + csv_file.name,\
                                index_col=['Ratee Unique ID', 'Rater Unique ID'], \
@@ -173,6 +183,8 @@ def create_new_study(request):
     context['start_time'] = start_time
     #context['na_codes'] = na_codes
     context['k'] = k
+    
+    print "create_new_study", get_client_ip(request)
          
     return render(request, 'twister/create_new_study.html', context)
 
@@ -225,6 +237,8 @@ def user_start2(request):
     context['start_time'] = start_time
     context['k'] = k   
     
+    print "user_start2", get_client_ip(request)
+    
     #we'll send this to rater_conf in the form submission, which iis in the .html
     return render(request, 'twister/user_start2.html', context)
 
@@ -265,6 +279,8 @@ def rater_conf(request):
     context['in_name'] = in_name
     context['start_time'] = start_time
     context['k'] = k
+    
+    print "rater_conf", get_client_ip(request)
     
     return render(request, 'twister/rater_conf.html', context)
 
@@ -348,7 +364,8 @@ def tenure_ask(request):
     del hatanalysis_30d,hatanalysis_60d,hatanalysis_90d,hatanalysis_180d,hatanalysis_270d,hatanalysis_365d 
     
     context['tenure_plot_tenure'] = hatanalysis_0d[tenure_label].tolist()
-    context['tenure_plot_perf'] = hatanalysis_0d['Item Avg'].tolist()    
+    context['tenure_plot_perf'] = hatanalysis_0d['Item Avg'].tolist()
+    context['tenure_plot_random_id'] = hatanalysis_0d.index.tolist()    
     context['df_tenure_report'] = df_tenure_report.to_html()
     context['30_Cases_Excluded'] = df_tenure_report.ix[30,'Cases Excluded']
     context['30_r_perf_tenure'] = df_tenure_report.ix[30,'r_(perf,tenure)']
@@ -359,6 +376,8 @@ def tenure_ask(request):
     context['in_name'] = in_name
     context['start_time'] = start_time
     context['k'] = k    
+     
+    print "tenure_ask", get_client_ip(request)
       
     #we'll send this to rater_conf in the form submission, which iis in the .html
     return render(request, 'twister/tenure_ask.html', context)
@@ -772,11 +791,51 @@ def show_and_match(request):
     match_frame_headers = ['Ratee First Name','Ratee Last Name','Email','Last 4 SSN','Random ID','Ratee Unique ID']
     match_frame = spin_master[match_frame_headers]
     
+    
     scale_summary = df_report.ix[0:3,['Label','Values']]
     covariate_summary = df_report.ix[5:,:]
     
     short_heads = shorten_labels(corrs_items.index.values)    
     corrs_items.index = short_heads
+       
+    
+    #COVARIATE LISTS
+    #JOB TITLES
+    jobs_frame = subselect['Job Title'].value_counts().to_frame()
+    jobs_frame.columns = ['Count of Job Titles']
+    jobs_frame['% of Working Sample'] = jobs_frame['Count of Job Titles'] / len(subselect)
+    context['jobs_frame'] = jobs_frame.to_html()
+        
+    #RATERS
+    raters_frame = subselect['Rater Unique ID'].value_counts().to_frame()
+    raters_frame.columns = ['Count of Raters']
+    raters_frame['% of Working Sample'] = raters_frame['Count of Raters'] / len(subselect)
+    context['raters_frame'] = raters_frame.to_html()
+        
+    #GEO 1
+    geo1_frame = subselect['Geo Level 1'].value_counts().to_frame()
+    geo1_frame.columns = ['Count of Geo 1']
+    geo1_frame['% of Working Sample'] = geo1_frame['Count of Geo 1'] / len(subselect)
+    context['geo1_frame'] = geo1_frame.to_html()
+    
+    #GEO 2
+    geo2_frame = subselect['Geo Level 2'].value_counts().to_frame()
+    geo2_frame.columns = ['Count of Geo 2']
+    geo2_frame['% of Working Sample'] = geo2_frame['Count of Geo 2'] / len(subselect)
+    context['geo2_frame'] = geo2_frame.to_html()
+    
+    #GEO 3
+    geo3_frame = subselect['Geo Level 3'].value_counts().to_frame()
+    geo3_frame.columns = ['Count of Geo 3']
+    geo3_frame['% of Working Sample'] = geo3_frame['Count of Geo 3'] / len(subselect)
+    context['geo3_frame'] = geo3_frame.to_html()
+    
+    #GEO 4
+    geo4_frame = subselect['Geo Level 4'].value_counts().to_frame()
+    geo4_frame.columns = ['Count of Geo 4']
+    geo4_frame['% of Working Sample'] = geo4_frame['Count of Geo 4'] / len(subselect)
+    context['geo4_frame'] = geo4_frame.to_html()
+    
     
        
     '''VISUALIZING PERFORMANCE VARIABLE'''
@@ -789,12 +848,15 @@ def show_and_match(request):
     context['match_frame'] = match_frame.to_html(index=False,na_rep='')
     context['scale_summary'] = scale_summary.to_html(header=False,index=False,na_rep='')
     context['item_summary'] = item_summary.to_html(float_format=lambda x: '%.2f' % x,na_rep='')
-    context['corrs_items'] = corrs_items.to_html(float_format=lambda x: '%.2f' % x,na_rep='')
+    context['corrs_items'] = corrs_items.to_html(classes='" id = "ii_corr_matrix_table',float_format=lambda x: '%.2f' % x,na_rep='')
     context['tenure_label'] = tenure_label
     context['tenure_rem_label'] = tenure_rem_label
     context['in_name'] = in_name
     context['start_time'] = start_time
     context['k'] = k   
+    
+    
+    print "show_and_match", get_client_ip(request)
                
     #we'll send this to show_and_match in the form submission, which is in the .html
     return render(request, 'twister/show_and_match.html', context)
@@ -821,7 +883,7 @@ def match_and_merge(request):
     data_entry_form = DataEntryForm()
     context['data_entry_form'] = data_entry_form
     
-    
+    print "match_and_merge", get_client_ip(request)
             
     return render(request, 'twister/match_and_merge.html', context)
 
@@ -849,6 +911,8 @@ def merge_and_master(request):
     csv_file = request.FILES['csv_file']
 
     twister_data_uploader = TwisterDataUploader()
+    
+    #Hung's file format hack, see if works with twisteruploader    
     
     with open(twister_data_uploader.file_system.location + "/" + csv_file.name, 'wb+') as destination:
         for chunk in csv_file.chunks():
@@ -1055,7 +1119,7 @@ def merge_and_master(request):
     'LAST_NAME': 'Match Last', 'LAST_FOUR_SSN': 'Match SSN'})
        
     master_tab_headers = ['PA ID', 'Match First', 'Match Last', 'Match Email', 'Match SSN', 'Performance Type', \
-    'Set Type', tenure_label, 'Overall Performance Rating']
+    'Set Type', tenure_label, 'Overall Performance Rating', ]
     
     data5 = full_data.ix[:,master_tab_headers]
        
@@ -1064,10 +1128,12 @@ def merge_and_master(request):
     #data 6 is to append from item 1 through any supplemental items.
     #this is why we had to work backwards from the location of Item Avg
     #Item Avg should not be displayed here though. its just a reference point
-       
+    
+    
+    #biodata update   
     master_tab_headers2 = ['Job Title', 'Hire Date', 'Random ID', 'Ratee First Name', 'Ratee Last Name',\
     'Ratee Unique ID', 'Survey Group', 'Geo Level 1', 'Geo Level 2', 'Geo Level 3', 'Geo Level 4', 'Rater First Name',\
-    'Rater Last Name', 'Rater Unique ID', 'Ratee Status']
+    'Rater Last Name', 'Rater Unique ID', 'Ratee Status', 'BIRTH_DATE', 'GENDER', 'ETHNICITY']
     
     data7 = data6.join(full_data.ix[:,master_tab_headers2], rsuffix= '_y')
     data8 = data7.join(full_data.ix[:,Headers_PPI2], rsuffix= '_y')
@@ -1084,7 +1150,8 @@ def merge_and_master(request):
     #Below we fill any misising cells with zeros
     data10[master_tab_dummyheaders] = data10[master_tab_dummyheaders].fillna(0)
     
-    data11 = data10
+    data11 = data10    
+    
     final_removal_headers = ['Removal - Not Matched = 1'] + master_tab_dummyheaders
     data11['Final Sample Code'] = data11.ix[:,final_removal_headers].sum(axis= 1)
     Final_Data = data11[data11['Final Sample Code']==0]
@@ -1099,11 +1166,70 @@ def merge_and_master(request):
     #appears as a collapsible frame on the page merge_and_master.html
     final_final_headers = Final_Data.columns[0:9].tolist()
     
+    Final_Data['Match SSN'] = "masked"
+    
     context['final_final_data'] = Final_Data[final_final_headers].to_html(index=False,na_rep='')
+    
+    
+    context['fata_json'] = Final_Data.to_json()    
+    context['fata_col_headers'] = headerpacker(Final_Data)
     context['col_headers'] = headerpacker(data10)
     context['data10'] = data10.to_json()
     context['in_name'] = in_name    
     
+    
+    '''FOR BIO DATA TABLES FEEDING VALIDITY REPORT'''
+    
+    #JOB TITLES BECAUSE SOMETIMES IT COMES UP
+    jobtitles_frame = Final_Data['Job Title'].value_counts().to_frame()
+    jobtitles_frame.columns = ['Count of Job Titles']
+    jobtitles_frame['% of Final Sample'] = jobtitles_frame['Count of Job Titles'] / len(Final_Data)
+    context['job_titles'] = jobtitles_frame.to_html()
+        
+            
+    #ETHNICITY
+    eth_frame = Final_Data['ETHNICITY'].value_counts().to_frame()
+    eth_frame.columns = ['Count of Ethnicity Categories']
+    eth_frame['% of Final Sample'] = eth_frame['Count of Ethnicity Categories'] / len(Final_Data)
+    context['bio_eth'] = eth_frame.to_html()
+    
+    
+    #GENDER
+    gend_frame = Final_Data['GENDER'].value_counts().to_frame()
+    gend_frame.columns = ['Count of Gender Categories']
+    gend_frame['% of Final Sample'] = gend_frame['Count of Gender Categories'] / len(Final_Data)
+    context['bio_gend'] = gend_frame.to_html()
+    
+    #BIRTH_YEAR
+    #forty and over, under forty, non identify
+    age_frame = Final_Data[['BIRTH_DATE','ETHNICITY']]
+    birth_list = age_frame['BIRTH_DATE'].values
+    
+    
+    age_cats = []
+    this_year = datetime.now().year
+    for i in range(0,len(birth_list)):
+       try:
+            if (this_year - birth_list[i]) >= 40:
+               age_cats = age_cats + ['Forty and Over']
+            elif (this_year - birth_list[i]) < 40:
+               age_cats = age_cats + ['Under Forty']
+            else:
+                age_cats = age_cats + ['Do not wish to self-identify']
+       except:
+            age_cats = age_cats + ['Do not wish to self-identify']
+    
+    
+    print len(age_frame), len(age_cats), age_cats
+    age_frame['age_cats'] = age_cats
+    forty_frame = age_frame['age_cats'].value_counts().to_frame()
+    #forty_frame['age_yrs'] = datetime.now().year - Final_Data['BIRTH_DATE']
+    forty_frame.columns = ['Count of Age Categories']
+    forty_frame['% of Final Sample'] = forty_frame['Count of Age Categories'] / len(Final_Data)
+    context['bio_forty'] = forty_frame.to_html()
+    
+    
+        
     
     '''SPECIFICALLY FOR CSO BLURB'''
     
@@ -1163,16 +1289,16 @@ def merge_and_master(request):
             beat_time_seconds = 0
     else:
         beat_time_hours = beat_time_sec / (60*60)
-        if beat_time_sec % 60*60 == 0:
+        if beat_time_sec % (60*60) == 0:
             beat_time_minutes = 0
             beat_time_seconds = 0
         else:
-            beat_time_minutes = beat_time_sec % 60*60
+            beat_time_minutes = (beat_time_sec % (60*60)) / 60
             if beat_time_sec % 60 == 0:
                 beat_time_seconds = 0
             else:
-                beat_time_seconds = (beat_time_sec % 60*60) % 60
-
+                beat_time_seconds = (beat_time_sec % (60*60)) % 60
+    
     
     if beat_time_minutes < 10:
         beat_time_minutes = '0{}'.format(beat_time_minutes)
@@ -1182,9 +1308,17 @@ def merge_and_master(request):
         beat_time_seconds = '0{}'.format(beat_time_seconds)
     else:
         pass
-
+    
     beat_time = "{}:{}:{}".format(beat_time_hours,beat_time_minutes,beat_time_seconds)
     #print beat_time
+    
+    #saving to your model instances, for the database
+    #profile_dimension_object.final_weight = average_weight
+    # save the user info
+    #profile_dimension_object.last_updated_by = user_id
+    # save the updated profile info object
+    #profile_dimension_object.save(using='pa_io')
+    
         
     context['cso_actual_bullets'] = cso_actual_bullets
     context['start_sample'] = len(spin_master)
@@ -1199,12 +1333,178 @@ def merge_and_master(request):
     context['beat_hours'] = beat_time.split(":")[0] #string formatted for clock like display
     context['beat_minutes'] = beat_time.split(":")[1] #string formatted for clock like display
     context['beat_seconds'] = beat_time.split(":")[2] #string formatted for clock like display
-        
+    
+    print "merge_and_master", get_client_ip(request)    
                 
     return render(request, 'twister/merge_and_master.html', context)
 
 #out of merge_and_master, there are two icons: claim prize and beat the best
 #claim prize exports a randomly chosen item from the static/dlc folder
+
+def red_pill(request):
+    
+    
+    from sklearn.pipeline import Pipeline
+    from sklearn.linear_model import LinearRegression
+    from sklearn import cross_validation
+    from sklearn.metrics import r2_score
+    from scipy.stats import f
+    from sklearn.decomposition import PCA
+
+    
+    context = dict()
+             
+    in_name = str(request.POST.get('in_name'))
+    
+    col_headers = pd.read_json(request.POST.get('fata_col_headers'))
+    col_headers.sort('order',inplace=True)
+    col_headers = col_headers.header.tolist()
+
+    fata = pd.read_json(request.POST.get('fata_json')) 
+    fata = fata[col_headers]
+    
+    fata['Match SSN'] = "masked"
+    
+    
+    ppi2_pop_params_dict = {'Dimension Name': ['ACCEPTANCE_OF_AUTHORITY', 'AMBITION', 'ANALYTICAL', 'ASSERTIVENESS',\
+         'ATTENTION_TO_DETAILS', 'BUSINESS_ATTITUDE', 'CHANGE_ORIENTATION', \
+         'COMPETITIVE_FIERCENESS', 'CONFIDENCE', 'CONSCIENTIOUSNESS', 'COOPERATIVENESS', \
+         'CREATIVITY', 'DISCIPLINE', 'EMOTIONAL_CONSISTENCY', 'ENERGY', 'FLEXIBILITY', \
+         'INSIGHT_INTO_OTHERS', 'JOB_ATMOSPHERE', 'LEADERSHIP_IMPACT', 'MENTAL_FLEXIBILITY', \
+         'NEED_FOR_RECOGNITION', 'NUMERICAL_REASONING', 'OBJECTIVITY', 'OPTIMISM', \
+         'ORGANIZATIONAL_STRUCTURE', 'ORGANIZATIONAL_TENDENCY', 'PACE', 'PEOPLE_ORIENTATION', \
+         'PRACTICAL', 'REALISTIC_THINKING', 'REFLECTIVE', 'RISK_TAKER', 'SELF_RELIANCE', \
+         'SOCIABILITY', 'SOCIAL_CONTACT', 'STRESS_TOLERANCE', 'TEAM_ORIENTATION', \
+         'TOUGH_MINDEDNESS', 'VERBAL_REASONING'],\
+        'Mean.p': [63.96,54.13,53.8,55.15,60.02,58.44,48.96,51.1,51.09,61.39,57.06,53.46,\
+        60.54,60.52,57.04,54.62,60.8,59.35,52.18,52.47,50.5,51.25,56.82,57.64,47.57,63.99,55.06,\
+        62.33,60.12,45.89,52.86,52.02,43.68,61.53,53.47,54.77,53.84,48.59,53.69],\
+        'Std.p': [18.83,16.87,12.33,13.47,15.6,15.84,13.26,13.82,11.92,16.06,14.3,16.66,\
+        17.45,18.34,15.48,13,16.09,13.88,12.52,13.76,13.84,15.53,14.87,14.49,11.93,16.69,14.88,\
+        14.55,14.05,12.86,12.79,14.28,12.39,15.51,13.26,13.21,12.36,13.12,15.09]}    
+        
+    ppi2_pop_params = pd.DataFrame(ppi2_pop_params_dict, columns=['Dimension Name',\
+        'Mean.p','Std.p'])    
+    
+    model_headers = ppi2_pop_params['Dimension Name'].tolist()
+    model_headers.insert(0,'Overall Performance Rating')
+
+    MR_linear_b_weights = []
+    MR_linear_b_weights_snormed = []
+    PC_linear_corrs = []
+    PC_linear_r2 = []
+    PC_quad_r2 = []
+    PC_quad_stepchange = []
+    PC_F_stepchange = []
+    PC_p_stepchange = []
+    
+    #Normalized on op parameters (pop parameters) and averaged dim scores
+    #this gives a sense of how unique the dim mean is on this sample
+    #should average to about zero
+    Dim_Z_mean = []
+    
+    #similar to above, will give a sense of how restricted the sample is
+    #should average to about one
+    Dim_Z_sd = []
+    
+    #t-test that the sample's dimension scores are from the population params, assuming
+    #normality
+    Dim_ind_sample_t = []
+    
+    #p value for the t-test
+    Dim_ind_sample_p = []
+    
+    
+    #In MR, use the entire set of 39 predictors
+    #For this version, we are using raw dimension and criterion scores
+    #and reporting raw b_coefficients (unstandardized)
+    
+    #X_raw contains 39 columns and len() of sample size
+    X_raw = fata[ppi2_pop_params['Dimension Name']].values
+    Y_raw = fata['Overall Performance Rating']
+    
+    #the fit method regresses predictors array X on outcome array Y
+    MR_linear = LinearRegression()
+    MR_linear.fit(X_raw,Y_raw)
+    
+    #now the MR_linear instance can call the coef_ list inside the loop; 
+    #coef_ list will have 39 dimensions corresponding to the  39 predictors
+    #all in abc order of predictor list: Headers_PPI2
+    MR_linear_b_weights = MR_linear.coef_ #a list of 39 values
+    MR_r2_concurrent = MR_linear.score(X_raw,Y_raw) #a single value
+    
+    temp_lil_r = []
+    
+    for i in range(0,39):    
+            
+        temp_lil_r = fata[[model_headers[0],model_headers[1+i]]].corr().values[0,1]    
+        temp_lil_r2 = float(temp_lil_r)*float(temp_lil_r)
+        PC_linear_corrs.append(temp_lil_r)
+        PC_linear_r2.append(temp_lil_r2)
+        
+        subfata = pd.DataFrame()    
+        subfata = fata[[model_headers[0],model_headers[1+i]]]
+        subfata['dim_sq'] = subfata[model_headers[1+i]] * subfata[model_headers[1+i]]   
+        
+        temp_X = subfata[subfata.columns[1:]]
+        MR_quad = LinearRegression()
+        MR_quad.fit(temp_X,subfata[model_headers[0]])
+        
+        temp_lil_quad_r2 = MR_quad.score(temp_X,subfata[model_headers[0]])    
+        PC_quad_r2.append(temp_lil_quad_r2)
+        
+        temp_quad_stepchange = temp_lil_quad_r2 - temp_lil_r2
+        PC_quad_stepchange.append(temp_quad_stepchange)
+        
+        df2 = len(Y_raw)-3
+        #F formula given by Cohen et al. (2013)
+        temp_F = (temp_quad_stepchange/(1-temp_lil_quad_r2))*df2
+        PC_F_stepchange.append(temp_F)
+        
+        temp_p = 1 - f.cdf(temp_F,1,df2)
+        PC_p_stepchange.append(temp_p)
+        
+      
+    
+    df_dims_weights = pd.DataFrame({"Dimensions" : ppi2_pop_params['Dimension Name'].values, \
+                                    "MR_linear_b_weights" : MR_linear_b_weights, \
+                                    "Bivar_XY Linear Corr" : PC_linear_corrs, \
+                                    "Step 1 Linear R2" : PC_linear_r2, \
+                                    "Step 2 Quad R2" : PC_quad_r2, \
+                                    "Step Change R2" : PC_quad_stepchange, \
+                                    "Step Change F-statistic" : PC_F_stepchange, \
+                                    "Step Change p-value" : PC_p_stepchange})
+    
+    dims_weights_headers = ["Dimensions","MR_linear_b_weights","Bivar_XY Linear Corr",\
+                            "Step 1 Linear R2","Step 2 Quad R2","Step Change R2",\
+                            "Step Change F-statistic","Step Change p-value"]
+    
+    df_dims_weights = df_dims_weights[dims_weights_headers]
+    
+    df_dims_weights.sort(columns=['Step 1 Linear R2'], ascending=False,inplace=True)
+    
+    
+    #PCA on the predictors
+    pca = PCA()
+    pca.fit(X_raw)
+    
+    #plot these like a scree plot, will show the drop off in component/dimension needs
+    explained_var_ratios = pca.explained_variance_ratio_
+    components = pca.components_
+    
+    
+    #context['pc_raw_linear_b_weights']
+    context['dims_weights'] = df_dims_weights.to_html(index=False,float_format=lambda x: '%.3f' % x,na_rep='')
+    context['data_final'] = fata.to_html(index=False,na_rep='')
+    context['in_name'] = in_name
+    context['corr_matrix'] = fata[model_headers].corr().to_html(classes='" id = "corr_matrix_table',float_format=lambda x: '%.2f' % x,na_rep='')
+    
+    
+    print "red_pill", get_client_ip(request)
+    
+    return render(request, 'twister/red_pill.html', context)
+
+
 
 def click_spin_export(request):
              
@@ -1238,7 +1538,6 @@ def click_spin_export(request):
     return response
 
 
-
 #the eval export template
 def export_empty_eval(request):
     # Create the HttpResponse object with the appropriate CSV header.
@@ -1256,6 +1555,8 @@ def export_empty_eval(request):
  
     writer.writerow(header_row)
     
+    print "export_empty_eval", get_client_ip(request)
+    
     return response
 
 
@@ -1269,7 +1570,8 @@ def export_empty_match(request):
     writer = csv.writer(response)
     
     header_row = ["PA ID","FIRST_NAME","LAST_NAME","EMAIL","LAST_FOUR_SSN","COMPANY_CANDIDATE_ID",\
-    "COMPANY_CANDIDATE_CODE","DATE_IN_POSITION","SET_TYPE","ASSESSMENT_DATE","Core Dimension Composition Type",\
+    "COMPANY_CANDIDATE_CODE","BIRTH_DATE","GENDER","ETHNICITY",\
+    "DATE_IN_POSITION","SET_TYPE","ASSESSMENT_DATE","Core Dimension Composition Type",\
     "ACCEPTANCE_OF_AUTHORITY","AMBITION","ANALYTICAL","ASSERTIVENESS","ATTENTION_TO_DETAILS","BUSINESS_ATTITUDE",\
     "CHANGE_ORIENTATION","COMPETITIVE_FIERCENESS","CONFIDENCE","CONSCIENTIOUSNESS","COOPERATIVENESS","CREATIVITY",\
     "DISCIPLINE","EMOTIONAL_CONSISTENCY","ENERGY","FLEXIBILITY","INSIGHT_INTO_OTHERS","JOB_ATMOSPHERE","LEADERSHIP_IMPACT",\
@@ -1280,13 +1582,17 @@ def export_empty_match(request):
  
     writer.writerow(header_row)
     
+    print "export_empty_match", get_client_ip(request)
+    
     return response
 
 
 def full_docs(request):
      context = dict()
      z = "Full docs"
-     context["print_y"] = z       
+     context["print_y"] = z
+     
+     print "full_docs", get_client_ip(request)       
             
      return render(request, 'twister/full_docs.html', context)
     
@@ -1302,7 +1608,8 @@ def headerpacker(dataframe):
         header_list = header_list + [temp_header_array[i]]
     
     header_frame = pd.DataFrame({'order':order_list,'header':header_list})
-
+    
+    
     return header_frame.to_json()
 
 
@@ -1323,7 +1630,7 @@ def click_final_export(request):
              
     in_name = str(request.POST.get('in_name'))
     
-    col_headers = pd.read_json(request.POST.get('col_headers'))
+    col_headers = pd.read_json(request.POST.get('data10_col_headers'))
     col_headers.sort('order',inplace=True)
     col_headers = col_headers.header.tolist()
 
@@ -1346,6 +1653,9 @@ def click_final_export(request):
             
     response = HttpResponse(xls_output,content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(xls_out)
+    
+    print "click_final_export", get_client_ip(request)
+    
     return response
 
 
@@ -1435,7 +1745,7 @@ def scoreboard(request):
     else:
         beat_comment = 'The Twister gods demand more sacrifice.'       
     
-    all_scores.drop_duplicates(inplace=True)
+    all_scores.drop_duplicates(subset='Data',inplace=True)
     top_scores = all_scores.iloc[:5]
     
     ifile = open(scoreboard_input_data, "w")    
@@ -1455,6 +1765,8 @@ def scoreboard(request):
     context['beat_hours'] = beat_time.split(":")[0]
     context['beat_minutes'] = beat_time.split(":")[1]
     context['beat_seconds'] = beat_time.split(":")[2]
+    
+    print "scoreboard", get_client_ip(request)
         
     return render(request, 'twister/scoreboard.html', context)
 
@@ -1475,5 +1787,14 @@ def prizes(request): #choose from dlc directory and serve to user
     #response = HttpResponse(xls_output,content_type='application/vnd.ms-excel')
     #response['Content-Disposition'] = 'attachment; filename="{}"'.format(xls_out)
     '''
+    print "prizes", get_client_ip(request)
     
     return render(request, 'twister/prizes.html', context)
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
