@@ -16,7 +16,6 @@
 
 h4 {
 	color: #69B5DD;
-
 }
 
 #file_upload {
@@ -102,6 +101,19 @@ div#bs_name {
 	fill:#F2BC41;
 }
 
+redpill {
+	border:none; 
+	background-color:transparent;
+}
+
+button#redpill {
+	background-color: white;
+	color: white;
+	border-color:white;
+	-webkit-border-radius: 28;
+}
+
+
 #timer_hide {
 	border:none; 
 	background-color:transparent;
@@ -170,7 +182,7 @@ table tr:nth-child(even) {
 	    <form name="local_form_canstyle2" id="local_form_canstyle2" action="{% url 'twister:click_final_export' %}" method="post" enctype="multipart/form-data">
 			    {% csrf_token %}			    
 			    <input type="hidden" value="{{ data10 }}" name="data10"/>
-			    <input type="hidden" value="{{ col_headers }}" name="col_headers"/>
+			    <input type="hidden" value="{{ col_headers }}" name="data10_col_headers"/>
 			    <input type="hidden" value="{{ in_name }}" name="in_name"/>    
 			                                     
 			    <br><br>
@@ -225,6 +237,18 @@ directly into an e-mail."
 	    Thanks,<br>
 	    Twister
 	    </p>
+		<br><br><br>
+		{{ bio_eth | safe }}
+		<br><br><br>
+		
+		{{ bio_gend | safe }}
+		<br><br><br>
+		
+		{{ bio_forty | safe }}
+		
+		<br><br><br>
+		
+		{{ job_titles | safe }}		
 			   		
 	    </div>
 	<br><br><br>
@@ -242,24 +266,51 @@ automated removals and scale computations."
 	    </div>	    
 	</div>
 	
-	<div class="card"  style="height: 86px; text-align:center; padding: 5% 0%;">
-	    	<a href="{% url 'twister:index' %}"><img id="star" title="Claim your victory" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/star-filled.svg' %}"/></a>
+	<br>
+	<br>
+	<br>
+	<div class="card"  style="height: 75px; text-align:center; padding: 5% 0%;">
+	    	<button id="timer_hide" onclick="submitBeatBestForm();"><img id="timer" onclick="submitBeatBestForm();" title="Beat the best" style="border-radius:1px;height:75px; width:75px;" src="{% static 'twister/images/timer.svg' %}"/></button>
+	</div>
+	<br>
+	<br>
+	<div class="card"  style="height: 150px; text-align:center; padding: 5% 0%;">
+		<div class="row">
+			<div class="col-sm-4"></div>
+			<div class="col-sm-2"><button id="globe" onclick="submitBeatBestForm();" style="border:none;background-color:transparent;"><img id="globe" onclick="submitBeatBestForm();" title="Worldwide" style="border-radius:1px;height:75px; width:75px;" src="{% static 'twister/images/globe.svg' %}"/></button></div>
+			<div class="col-sm-2"><button id="red_pill" onclick="submitRedPillForm();" style="border:none;background-color:transparent;"><img id="redpill" onclick="submitBeatBestForm();" title="The Red Pill" style="border-radius:1px;height:75px; width:75px;" src="{% static 'twister/images/redpill.svg' %}"/></button></div>
+			<div class="col-sm-4"></div>
+		</div>   	
 	</div>
 	
-	<div class="card"  style="height: 100px; text-align:center; padding: 5% 0%;">
-	    	<button id="timer_hide" onclick="submitBeatBestForm();"><img id="timer" onclick="submitBeatBestForm();" title="Beat the best" style="border-radius:1px;height:60px; width:60px;" src="{% static 'twister/images/timer.svg' %}"/></button>    	
+	<div class="card"  style="height: 75px; text-align:center; padding: 5% 0%;">
+	    <a href="https://www.youtube.com/watch?v=R0V_D4zaEpU"><img id="star" title="Claim your victory" style="border-radius:1px;height:75px; width:75px;" src="{% static 'twister/images/star-filled.svg' %}"/></a>	    	
 	</div>
+	<br>
+	<br>
 	
 	<div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
 			<form name="local_form_canstyle3" id="local_form_canstyle3" action="{% url 'twister:scoreboard' %}" method="post" enctype="multipart/form-data">
 			    {% csrf_token %}
 			    			   
 			    <input type="hidden" value="{{ beat_time }}" name="beat_time"/>
+			    <input type="hidden" value="{{ beat_time_sec }}" name="beat_time_sec"/>
 			    <input type="hidden" value="{{ in_name }}" name="in_name"/>
 			    <input type="hidden" value="{{ start_sample }}" name="start_sample"/>	
 			    <input type="hidden" value="{{ final_sample }}" name="final_sample"/>
 			  
 			    				    
+			</form>
+	</div>
+	
+	<div class="card"  style="height: 100%; width:100%; text-align:center;padding: 2% 20%;">
+			<form name="local_form_canstyle4" id="local_form_canstyle4" action="{% url 'twister:red_pill' %}" method="post" enctype="multipart/form-data">
+			    {% csrf_token %}
+			    			   
+			    <input type="hidden" value="{{ fata_json }}" name="fata_json"/>
+			    <input type="hidden" value="{{ fata_col_headers }}" name="fata_col_headers"/>
+			    <input type="hidden" value="{{ in_name }}" name="in_name"/> 
+		    				    
 			</form>
 	</div>	
 	
@@ -270,6 +321,10 @@ automated removals and scale computations."
 
 function submitBeatBestForm() {
     document.getElementById("local_form_canstyle3").submit();
+}
+
+function submitRedPillForm() {
+    document.getElementById("local_form_canstyle4").submit();
 }
 
 </script>
