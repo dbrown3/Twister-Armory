@@ -2,9 +2,19 @@
 {% block mainContent %}
 
 <!DOCTYPE html>
+<head>
 <meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 
 <style>
+
+body{
+	
+	background-image:url('');
+	background-size:100%;
+}
 
 
 h1 {
@@ -64,7 +74,7 @@ div{
   <div class="single-column">
     
     <div class="card"  style="height: 66px">
-    	<h1>Twister</h1>
+    	<h1 id="twister_title">Twister</h1>
     </div>
     
     <div class="card" id="authors"  style="height: 99px">
@@ -140,20 +150,74 @@ missing data:
   </div>  
 </div>
 
+<audio id="cow_sound" autoplay>
+    	<source src="{{MEDIA_URL}}cow.wav"/>
+</audio>
+	
+
 </html>
 
 
 <script language="Javascript">
-    	
+
+		
+		//sets user wall paper and enables pic cycling on click
+		
+		var wall_path = "{{STATIC_URL}}";
+		var user_choice = ["twister/images/Kindred.jpg","twister/images/odell-right-1024.jpg",
+	                "twister/images/britts_pic_got.jpg","twister/images/alis_gabe_pic.jpg",
+	                "twister/images/tooths_pic_cowboys2016.jpg","twister/images/lsu_mike.jpg"];
+		
+		var pic_i = getRandomInt(0,user_choice.length);
+		
+		function getRandomInt(min, max) {
+		  min = Math.ceil(min);
+		  max = Math.floor(max);
+		  return Math.floor(Math.random() * (max - min)) + min;
+		};
+
+		
+		var	user_wall_url_path = "url('"+wall_path + user_choice[pic_i]+"')";
+			
+		console.log(wall_path,user_choice,"__",user_wall_url_path);	
+		document.body.style.backgroundImage = user_wall_url_path;
+		
+		d3.select('#twister_title')
+		.on('click', function()
+		{
+			pic_i ++;
+			
+			if (pic_i > user_choice.length) {
+				pic_i = 0;
+			}	
+			else	{
+			}
+			user_wall_url_path = "url('"+wall_path + user_choice[pic_i]+"')";
+			document.body.style.backgroundImage = user_wall_url_path;
+						
+		});
+		
+		
+
+       //lowers the volume of the cow sound to 10%
+        var aud = document.getElementById("cow_sound");
+                
+        function setHalfVolume() {
+		    aud.volume = 0.1;
+		}        
+        
+        setHalfVolume();
+        
+        
+        //on clicking the answers format button, an empty eval is exported with correct header labels           	
         var submitButton = document.getElementById("submitButton")
         var exportButton = document.getElementById("export_button")
         
-        //on clicking the answers format button, an empty eval is exported with correct header labels       
+        
         function click_export() {
         	window.location = "/twister/export_empty_eval";        
         }
-        
-        
+                
         function checkParameters() {        
             submitButton.style.visibility = 'visible'
 
@@ -199,9 +263,10 @@ missing data:
             IEspan = document.getElementById("IEWarningSpan")
             IEspan.innerHTML = "You are currently using Internet Explorer. Please use Chrome or Firefox to utilize the full feature set of Twister."
        };
-       
-         
+               
     </script>
+    
+    
 
 
 {% endblock %}
