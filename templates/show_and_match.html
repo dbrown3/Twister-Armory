@@ -160,7 +160,7 @@ table tr:nth-child(even) {
 	    The sample has been cleaned for performance data issues<br>
 	    and it is ready for matching.<br>
 	    <br>
-	    After you match, export the <b>"Profile Creation Match"</b> being sure to include <b>'Random ID'</b>.<br>
+	    After you match, export the <b>"Profile Creation Match"</b> being sure to include <b>'Random ID'</b> and <b>'Biographical Data'</b>.<br>
 	    <br>
 	    For your interest, Twister provides a variety of smart graphs and reports<br>
 	    in the space below. Feel free to take your time exploring and reflecting<br>
@@ -249,7 +249,7 @@ manual re-classifcations, or other analyst judgments.">Performance Data in Clean
 		view_width = window.innerWidth * .66;
 		view_height = window.innerHeight * .75;
 			
-		var margin = {top: view_height*.05, right: view_width*.02, bottom: view_height*.04, left: view_width*.02};
+		var margin = {top: view_height*.05, right: view_width*.02, bottom: view_height*.08, left: view_width*.02};
 		
 		width = view_width - margin.left - margin.right;
 		height = view_height - margin.top - margin.bottom;
@@ -339,10 +339,38 @@ manual re-classifcations, or other analyst judgments.">Inter-item Correlations</
 	    <h4 title="Ratio values represent the proportion of observations
 to the number of observed levels for the given covariate or factor.
 Ratio values over 10 can be analyzed with confidence.
+If p_value is less than p_cutoff, the difference is significant.
 Data has been cleaned for performance data issues.
 Final samples may differ due to assessment data issues, 
 manual re-classifcations, or other analyst judgments.">Covariate Summary</h4>
 	    {{ covariate_summary | safe }}
+	    
+	    <br><br><br>
+		
+		<h4>Job Title Counts </h4>
+		{{ jobs_frame | safe }}
+		<br><br><br>
+		
+		<h4>Rater Unique ID Counts </h4>
+		{{ raters_frame | safe }}
+		<br><br><br>
+        
+        <h4>Geo Level 1 Counts </h4>
+        {{ geo1_frame | safe }}
+		<br><br><br>
+        
+        <h4>Geo Level 2 Counts </h4>
+        {{ geo2_frame | safe }}
+		<br><br><br>
+
+		<h4>Geo Level 3 Counts </h4>
+        {{ geo3_frame | safe }}
+		<br><br><br>        
+
+		<h4>Geo Level 4 Counts </h4>
+        {{ geo4_frame | safe }}
+		<br><br><br>	    
+	    
 	    </div>
 	    
 	    <br><br>
@@ -369,6 +397,19 @@ manual re-classifcations, or other analyst judgments.">Covariate Summary</h4>
 	    <br>
 	</div>
 </div>
+
+<script>
+var table = document.getElementById("ii_corr_matrix_table");
+		for (var i = 0, row; row = table.rows[i]; i++) {
+		   for (var j = 0, col; col = row.cells[j]; j++) {
+		     if (i==j) {
+		     	console.log(i,j);
+		     	console.log(table.rows[i].cells[j]);
+		     	table.rows[i].cells[j].style.fontWeight = "bold";
+		     };
+		   };  
+		};		
+</script>
 </html>
 
 {% endblock %}
