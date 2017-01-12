@@ -1,0 +1,300 @@
+{% block mainContent %}
+{%  load static %}
+
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<style>
+
+html {
+	
+}
+
+body{
+	background-image:url('{{STATIC_URL}}{{back_map}}');
+	background-size:97%;
+	background-position: center 3%;
+	background-repeat: no-repeat;	
+}
+
+#a {
+	text-align: center;
+}
+
+div{
+	text-align: left;
+}
+
+div.tooltip {	
+    position: absolute;			
+    text-align: left;			
+    width: 260px;					
+    height: 250px;					
+    padding: 6px;				
+    font: 12px sans-serif;		
+    background: white;	
+    border: 0px;		
+    border-radius: 24px;
+    border-color: black;			
+    pointer-events: none;			
+}
+
+h3 {
+	text-align: center;
+}
+
+</style>
+
+<html>
+<body>
+<div id="maincontent" class="page-container scrollable" role="main">
+  	<div class="single-column">
+    {% csrf_token %}
+	    
+	   
+	    <audio id="back_music" autoplay>
+	    	<source src="{{MEDIA_URL}}mariorpg_1-12-hello-happy-kingdom.wav"/>
+		</audio>
+		
+	</div>
+</div>
+
+<script language="Javascript">
+    var aud = document.getElementById("back_music");
+        
+        
+    function setHalfVolume() {
+	    aud.volume = 0.2;
+	}        
+    
+    setHalfVolume();     
+
+	<!--THEME MUSIC FROM SUPER MARIO RPG
+	http://downloads.khinsider.com/game-soundtracks/album/super-mario-rpg-original-soundtrack/1-12-hello-happy-kingdom.mp3
+	-->
+	
+	//GROUP OBJECTIVE BLURBS ON MAP CLICK LOCATIONS
+	
+	var blurb_div = d3.select("body").append("div")	
+			    .attr("class", "tooltip")				
+			    .style("opacity", 0); 
+	
+	var coordinate = [0,0]
+	d3.select('html')
+		.on('click', function()
+		{
+			coordinates = d3.mouse(this);
+			
+			var w = window.innerWidth;
+			var h = window.innerHeight;
+			
+			var x = coordinates[0];
+			var y = coordinates[1];			
+			
+			var x_loc = x / w;
+			var y_loc = y / h;			
+			
+			
+			if (x_loc < .2 && y_loc < .6) {
+				
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);				
+				blurb_div.transition()
+					.duration(200)
+					.style("opacity",.95);
+				blurb_div.html("<p><h3>SHERWOOD FOREST <br/>(TWISTER'S HISTORY)</h3><ol>"+
+				"<li>Spin and Wind united into Twister (January 2015)</li>"+
+				"<li>Twister delivered via the web thanks to django</li>"+
+				"<li>Enhancements made to UX, Analytics engines and Community engagement</li>"+
+				"</ol></p>")
+					.style("left", "30px")
+					.style("top", "15px");
+					
+				console.log("THE PAST");			
+				
+			}	else if (x_loc < .2 && y_loc > .85) {
+								
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);				
+				blurb_div.transition()
+					.duration(200)
+					.style("opacity",.95);
+				blurb_div.html("<p><h3>WAPPLE VALLEY <br/>(ABSURDLY FUN UX)</h3>"+
+				"<ol>"+
+				"<li>Custom user skins or wallpaper</li>"+
+				"<li>Implement twister global impact map</li>"+
+				"<li>Engage users with thank you cards</li>"+
+				"<li>Throw periodic user community parties</li>"+
+				"<li>Build warchest for the prize repositiory</li>"+
+				"<li>Initiate charitable giving plan</li>"+
+				"<li>Implement lives affected page</li>"+
+				"<li>Music throughout</li>"+
+				"<li>Users do not touch the keyboard</li>"+				
+				"</ol></p>")
+					.style("left", "30px")
+					.style("top", "15px");		
+				console.log("ABSURDLY FUN UX");
+				
+			}	else if (x_loc < .87 && y_loc > .82) {
+				
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);				
+				blurb_div.transition()
+					.duration(200)
+					.style("opacity",.95);
+				blurb_div.html("<p><h3>WAPPLE VALLEY <br/>(ABSURDLY FUN UX)</h3>"+
+				"<ol>"+
+				"<li>Custom user skins or wallpaper</li>"+
+				"<li>Implement twister global impact map</li>"+
+				"<li>Engage users with thank you cards</li>"+
+				"<li>Throw periodic user community parties</li>"+
+				"<li>Build warchest for the prize repositiory</li>"+
+				"<li>Initiate charitable giving plan</li>"+
+				"<li>Implement lives affected page</li>"+
+				"<li>Music throughout</li>"+
+				"<li>Users do not touch the keyboard</li>"+				
+				"</ol></p>")
+					.style("left", "30px")
+					.style("top", "15px");
+				
+				console.log("ABSURDLY FUN UX");
+			}	else if (x_loc > .87) {
+				
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);				
+				blurb_div.transition()
+					.duration(200)
+					.style("opacity",.95);
+				blurb_div.html("<p><h3>WINTER MOUNTAINS <br/>(METRIC CUSTOMIZATION)</h3><ol>"+
+						"<li>Read-in stacked performance data</li>"+
+						"<li>Summarize longitudinal and non-standard scaled data</li>"+
+						"<li>Display mixed metric modelling for user Spinsight</li>"+
+					"</ol></p>")
+					.style("left", "30px")
+					.style("top", "15px");				
+				
+				console.log("WINTER MOUNTAINS");
+			}	else if (x_loc > .15 && x_loc < .32 && y_loc < .82 && y_loc > .32) {
+				
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);				
+				blurb_div.transition()
+					.duration(200)
+					.style("opacity",.95);
+				blurb_div.html("<p><h3>RIVER FORTRESS <br/>(ADVANCED GROUP-BASED ANALYTICS)</h3><ol>"+
+						"<li>Implement calculations for rater error removal logic</li>"+
+						"<li>Diagnostic data visualization of group differences</li>"+
+						"<li>Add group-normalization user option</li>"+
+						"<li>Add user entry point for exported profiles</li>"+
+						"<li>Add factor analysis to criterion data</li>"+
+					"</ol></p>")
+					.style("left", "30px")
+					.style("top", "15px");
+				
+				console.log("ADVANCED GROUP-BASED ANALYTICS");			
+			}	else if (x_loc > .32 && x_loc < .87 && y_loc < .75) {
+				
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);				
+				blurb_div.transition()
+					.duration(200)
+					.style("opacity",.95);
+				blurb_div.html("<p><h3>JUNGLE ISLAND EMPIRE <br/>(ITEM ENGINE)</h3><ol>"+
+						"<li>Specify database field requirements</li>"+
+						"<li>Build and implement item-database</li>"+
+						"<li>Build item optimization logic</li>"+
+						"<li>Launch period of evaluation item collection</li>"+
+						"<li>Use machine learning to vectorize meaningful features of effective eval items</li>"+
+						"<li>Build item recommendation engine</li>"+
+					"</ol></p>")
+					.style("left", "30px")
+					.style("top", "15px");
+				
+				console.log("ITEM ENGINE");
+			}	else if (x_loc > .20 && x_loc < .32 && y_loc < .32) {
+				console.log("return home");
+				window.location.href = "{% url 'twister:user_start' %}";
+			}
+			else	{
+				blurb_div.transition()
+					.duration(1)
+					.style("opacity",0);	
+				console.log("where is this?");
+			}	
+			
+			console.log(x_loc,"%",y_loc,"%");					
+		});
+			
+</script>
+
+
+<script id="omg_particle">
+
+
+var width = Math.max(960, innerWidth),
+    height = Math.max(500, innerHeight);
+
+var x1 = width / 2,
+    y1 = height / 2,
+    x0 = x1,
+    y0 = y1,
+    i = 0,
+    r = 33,
+    tau = 2 * Math.PI;
+
+var canvas = d3.select("body").append("canvas")
+    .attr("width", width)
+    .attr("height", height)
+    .on("ontouchstart" in document ? "touchmove" : "mousemove", move);
+
+
+
+var context = canvas.node().getContext("2d");
+context.globalCompositeOperation = "lighter";
+context.lineWidth = .66;
+
+d3.timer(function() {
+  context.clearRect(0, 0, width, height);
+
+  var z = d3.hsl(200, .4, ++i % 1.3).rgb(),
+      c = "rgba(" + z.r + "," + z.g + "," + z.b + ",",
+      x = x0 += (x1 - x0) * .1,
+      y = y0 += (y1 - y0) * .1;
+
+  d3.select({}).transition()
+      .duration(2000)
+      .ease(Math.sqrt)
+      .tween("circle", function() {
+        return function(t) {
+          context.strokeStyle = c + (1 - t) + ")";
+          context.beginPath();
+          context.arc(x, y, r * t, 0, tau);
+          context.stroke();
+        };
+      });
+});
+
+function move() {
+  var mouse = d3.mouse(this);
+  x1 = mouse[0];
+  y1 = mouse[1];
+  d3.event.preventDefault();
+}
+
+</script>
+</html>
+
+
+
+{% endblock %}
