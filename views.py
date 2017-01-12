@@ -10,6 +10,7 @@ from twister.forms import DataEntryForm, RaterConfForm
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats as stats
+from random import randint
 from pandas import Series, DataFrame, ExcelWriter
 import pandas as pd
 import csv
@@ -77,12 +78,67 @@ def user_start(request):
     context['data_entry_form'] = data_entry_form
     context['start_time'] = start_time
     
-    print "user_start", get_client_ip(request)
+    print "user_start", get_client_ip(request), type(get_client_ip(request)), len(get_client_ip(request))
     #ip_locator = geoip2()
     #client_ip = 10.48.24.244
+    
+    pic_list = ["twister/images/Kindred.jpg","twister/images/odell-right-1024.jpg",\
+                "twister/images/britts_pic_got.jpg","twister/images/alis_gabe_pic.jpg",\
+                "twister/images/tooths_pic_cowboys2016.jpg","twister/images/lsu_mike.jpg"]
+    
+    #context["user_wall"] = lookup_user_wall(get_client_ip(request))
+    context["user_wall"] = pic_list
+       
             
     return render(request, 'twister/user_start.html', context)
 
+
+def lookup_user_wall(ip):
+    
+    tooth_ip = '10.48.25.25'
+    #tooth_ip_remote = '10.39.144.191'
+    tooth_ip_remote = '10.39.152.145'
+    
+    grizz_ip = '10.48.24.176'
+    grizz_ip_remote = '10.39.154.101'
+    
+    dbrown_ip = '10.48.24.114'
+    dbrown_ip_remote = '10.39.136.73'
+    
+    ali_ip = ''
+    ali_ip_remote = '10.39.153.37'
+    
+    britt_ip = '10.48.24.177' #get this
+    britt_ip_remote = ''
+    
+    pic_list = ["","twister/images/Kindred.jpg","twister/images/odell-right-1024.jpg",\
+                "twister/images/britts_pic_got.jpg","twister/images/alis_gabe_pic.jpg",\
+                "twister/images/tooths_pic_cowboys2016.jpg","twister/images/lsu_mike.jpg"]    
+                
+        
+    if ip == dbrown_ip_remote or ip == dbrown_ip:
+        user_wall = "twister/images/Kindred.jpg" 
+        #https://lolwallpapers.net/wallpaper/6500
+        
+    elif ip == grizz_ip_remote or ip == grizz_ip:
+        user_wall = "twister/images/odell-right-1024.jpg"
+                        
+    elif ip == britt_ip or ip == britt_ip_remote:
+        user_wall = "twister/images/britts_pic_got.jpg"    
+    
+    elif ip == ali_ip or ip == ali_ip_remote:
+        user_wall = "twister/images/alis_gabe_pic.jpg"
+        
+    elif ip == tooth_ip or ip == tooth_ip_remote:
+        user_wall = "twister/images/tooths_pic_cowboys2016.jpg"
+        
+    else:
+        user_wall = pic_list[randint(0,len(pic_list)-1)]
+    
+    #'grizz_wall_img' = "twister/images/odell-right-1024.jpg"
+    #'tooth_wall_img' = "twister/images/wedding_table.JPG"    
+    
+    return user_wall
 
 
 #choose the file
@@ -324,7 +380,10 @@ def tenure_ask(request):
      
     else:
         data[tenure_label] = removal_date - pd.to_datetime(data['Hire Date'],format="%m/%d/%Y")
-        data[tenure_label] = data[tenure_label].apply(convert_tenure_type)
+        try:
+            data[tenure_label] = data[tenure_label].apply(lambda x: pd.tslib.Timedelta(x).days)
+        except:
+            data[tenure_label] = "Missing hire date"
     
     #new temp label that isn't defined until the next view
     tenure_rem_label = 'Removal - Insufficient tenure (less than {} days) = 1'.format("some")
@@ -927,12 +986,12 @@ def merge_and_master(request):
     data_match['Random ID as Index'] = data_match['Random ID']
     data_match = data_match.set_index('Random ID as Index')
     
+    
+    data_match['FALSIFICATION'] = data_match['FALSIFICATION'].replace('%','',regex=True).astype('float')*1.0/100
+    data_match['CONSISTENCY'] = data_match['CONSISTENCY'].replace('%','',regex=True).astype('float')*1.0/100
+    data_match['CLICK_THROUGH'] = data_match['CLICK_THROUGH'].replace('%','',regex=True).astype('float')*1.0/100
+
     #Create Quality Control(QC) by first reformatting 3 of the QC metrics into float types
-    
-    data_match['FALSIFICATION'] = data_match['FALSIFICATION'].replace('%','',regex=True).astype('float')/100
-    data_match['CONSISTENCY'] = data_match['CONSISTENCY'].replace('%','',regex=True).astype('float')/100
-    data_match['CLICK_THROUGH'] = data_match['CLICK_THROUGH'].replace('%','',regex=True).astype('float')/100
-    
     #Let's Rename Email to Match Email so that it is unique
     #data_match['Email'] = data_match['Match Email']
     data_match =  data_match.rename(columns={'EMAIL': 'Match Email'})
@@ -1220,7 +1279,7 @@ def merge_and_master(request):
             age_cats = age_cats + ['Do not wish to self-identify']
     
     
-    print len(age_frame), len(age_cats), age_cats
+    #print len(age_frame), len(age_cats), age_cats
     age_frame['age_cats'] = age_cats
     forty_frame = age_frame['age_cats'].value_counts().to_frame()
     #forty_frame['age_yrs'] = datetime.now().year - Final_Data['BIRTH_DATE']
@@ -1363,8 +1422,8 @@ def red_pill(request):
     fata = pd.read_json(request.POST.get('fata_json')) 
     fata = fata[col_headers]
     
-    fata['Match SSN'] = "masked"
-    
+    #print col_headers, len(col_headers)    
+    fata['Match SSN'] = "masked"    
     
     ppi2_pop_params_dict = {'Dimension Name': ['ACCEPTANCE_OF_AUTHORITY', 'AMBITION', 'ANALYTICAL', 'ASSERTIVENESS',\
          'ATTENTION_TO_DETAILS', 'BUSINESS_ATTITUDE', 'CHANGE_ORIENTATION', \
@@ -1388,7 +1447,9 @@ def red_pill(request):
     
     model_headers = ppi2_pop_params['Dimension Name'].tolist()
     model_headers.insert(0,'Overall Performance Rating')
-
+    
+    #print model_headers, len(model_headers)
+        
     MR_linear_b_weights = []
     MR_linear_b_weights_snormed = []
     PC_linear_corrs = []
@@ -1413,16 +1474,22 @@ def red_pill(request):
     
     #p value for the t-test
     Dim_ind_sample_p = []
-    
-    
+        
     #In MR, use the entire set of 39 predictors
     #For this version, we are using raw dimension and criterion scores
     #and reporting raw b_coefficients (unstandardized)
+    #fataselect_heads =  ['Overall Performance Rating']
+    #fataselect_heads = fataselect_heads.append(ppi2_pop_params['Dimension Name'].values)
+    
+    #print fataselect_heads, len(fataselect_heads)
     
     #X_raw contains 39 columns and len() of sample size
+    fata = fata.dropna(subset=model_headers)
+    
     X_raw = fata[ppi2_pop_params['Dimension Name']].values
     Y_raw = fata['Overall Performance Rating']
-    
+        
+    #print len(X_raw), len(Y_raw)
     #the fit method regresses predictors array X on outcome array Y
     MR_linear = LinearRegression()
     MR_linear.fit(X_raw,Y_raw)
@@ -1595,8 +1662,18 @@ def full_docs(request):
      print "full_docs", get_client_ip(request)       
             
      return render(request, 'twister/full_docs.html', context)
-    
 
+
+
+def twister_path(request):
+     context = dict()
+     
+     context['back_map'] = "twister/images/twister_path_cleanmap_wHistory.jpg"
+            
+     return render(request, 'twister/twister_path.html', context)
+ 
+ 
+ 
 def headerpacker(dataframe):
     temp_header_array = dataframe.columns.values
     
