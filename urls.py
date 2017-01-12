@@ -21,4 +21,7 @@ urlpatterns = patterns('',
                        url(r'^match_and_merge/$', views.match_and_merge, name='match_and_merge'),
                        url(r'^merge_and_master/$', views.merge_and_master, name='merge_and_master'),
                        url(r'^scoreboard/$', views.scoreboard, name='scoreboard'),
+                       url(r'^prizes/$', views.prizes, name='prizes'),
+                       url(r'^red_pill/$', views.red_pill, name='red_pill'),
+                       url(r'^twister_path/$', views.twister_path, name='twister_path'),
                        )
